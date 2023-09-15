@@ -1,0 +1,37 @@
+inputs:
+  top_zip_path:
+    type: File
+    format:
+    - edam:format_3987
+  # crd_path:
+  #   type: File
+  #   format:
+  #   - edam:format_1476
+  #   - edam:format_2033
+steps:
+  - steep_vac.yml:
+      in:
+        top_zip_path: ~top_zip_path
+        #crd_path: ~crd_path
+# Fatal error:
+# The coordinates could not be constrained. Minimizer 'cg' can not handle
+# constraint failures, use minimizer 'steep' before using 'cg'.
+#   - cg_vac.yml:
+#       in:
+#         top_zip_path: ~top_zip_path
+# # Fatal error:
+# # The combination of constraints and L-BFGS minimization is not implemented.
+# # Either do not use constraints, or use another minimizer (e.g. steepest
+# # descent).
+# #  - l-bfgs.yml:
+
+# wic:
+#   graphviz:
+#     label: Minimization
+#   steps:
+#     (1, steep.yml):
+#       wic:
+#         inlineable: False
+#     (2, cg.yml):
+#       wic:
+#         inlineable: False

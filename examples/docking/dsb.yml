@@ -36,7 +36,7 @@ wic:
               steps:
                 (4, genion):
                   in:
-                    output_top_zip_path: '&genion_complex.zip'
+                    output_top_zip_path: '&genion.zip'
           (2, basic.yml):
             wic:
               steps:
@@ -45,10 +45,10 @@ wic:
                     steps:
                       (2, grompp):
                         in:
-                          input_top_zip_path: '*genion_complex.zip'
+                          input_top_zip_path: '*genion.zip'
                       (3, mdrun):
                         in:
-                          output_crd_path: '&prod_complex.gro'
+                          output_crd_path: '&prod.gro'
                       (4, cwl_watcher_analysis.yml):
                         wic:
                           backend: complex
@@ -70,7 +70,7 @@ wic:
         inlineable: False # Due to yml wic tag inlineing issue and ~ inputs
         environment:
           action: restore
-          save_defs: ['genion_complex.zip', 'prod_complex.gro']
+          save_defs: ['genion.zip', 'prod.gro']
         steps:
           (1, setup.yml):
             wic:

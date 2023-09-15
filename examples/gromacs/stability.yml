@@ -18,10 +18,20 @@ inputs:
     - edam:format_3987
 
 steps:
+  # - setup_vac_min.yml:
+  #     in:
+  #       crd_path: ~crd_path
+  #       top_zip_path: ~top_zip_path
   - setup.yml:
       in:
         crd_path: ~crd_path
         top_zip_path: ~top_zip_path
+  - editconf:
+      in:
+      #input_crd_path: ~crd_path
+        config:
+          box_type: cubic
+          distance_to_molecule: 1.05 
   - basic.yml:
       in:
         nsteps: ~nsteps

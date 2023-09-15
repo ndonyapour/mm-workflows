@@ -1,12 +1,24 @@
+inputs:
+  # crd_path:
+  #   type: File
+  #   format:
+  #   - edam:format_1476
+  #   - edam:format_2033
+  top_zip_path:
+    type: File
+    format:
+    - edam:format_3987
+
 steps:
   - editconf:
       in:
+        #input_crd_path: ~crd_path
         config:
           box_type: cubic
           distance_to_molecule: 1.0
   - solvate:
       in:
-        input_top_zip_path: '*complex_vac.zip'
+        input_top_zip_path: ~top_zip_path
         output_crd_path: '&solvate.gro'
         output_top_zip_path: '&solvate.zip'
   - grompp:
