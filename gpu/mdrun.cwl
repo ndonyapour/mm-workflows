@@ -18,7 +18,7 @@ hints:
     cudaDeviceCountMin: 1
     cudaDeviceCountMax: 1
   DockerRequirement:
-    dockerPull: jakefennick/gromacs:2023.2 # ~2X performance improvement over gromacs 2022
+    dockerPull: ndonyapour/gromacs:2023.2 # ~2X performance improvement over gromacs 2022
     # dockerPull: gromacs/gromacs:2022.2 # Compatible with AWS EC2 "P3" instance types.
     # dockerPull: gromacs/gromacs:2021.4 # uses CUDA 10.1 which is compatible with AWS EC2 "P2" instance types.
     # See https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing
