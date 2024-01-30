@@ -9,13 +9,29 @@ inputs:
     - edam:format_3814
 
 steps:
-- id: convert_mol2
-  in:
-    input_path: input_sdf_path
+# - add_hydrogens_sdf:
+#     in:
+#       input_sdf_path: ~input_sdf_path #'*pdbbind_sdfs'
+#       output_sdf_path: '&ligand_H.sdf'
+- convert_mol2:
+    in:
+      input_path: input_sdf_path
 
-- id: convert_pdbqt
-  out:
-  - output_pdb_path: !& mol_prod.pdbqt
+- obmin:
+      in:
+        # Perform an initial minimization (only), i.e. do not search for conformers.
+        script: !ii /obminimize.sh # NOTE: Initial / required
+      out:
+      - output_mol2_path: !& ligand_min.mol2
+
+- convert_pdbqt:
+    out:
+    - output_pdb_path: !& mol_prod.pdbqt
+      
+# - meeko_prepare_ligand:
+#     in:
+#       input_path:  '*ligand_H.sdf' #~input_sdf_path
+#       output_pdbqt_path: '&mol_prod.pdbqt'
 
 - id: convert_mol2
   in:
@@ -35,15 +51,19 @@ wic:
       wic:
         graphviz:
           label: Assign Partial Charges
-    (2, convert_pdbqt):
+    (2, obmin):
+      wic:
+        graphviz:
+          label: Minimize ligand
+    (3, onvert_pdbqt):
       wic:
         graphviz:
           label: Convert to\npdbqt format
-    (3, convert_mol2):
+    (4, convert_mol2):
       wic:
         graphviz:
           label: Assign Partial Charges
-    (4, convert_pdbqt):
+    (5, convert_pdbqt):
       wic:
         graphviz:
           label: Convert to\npdbqt format
