@@ -1,0 +1,11 @@
+FROM condaforge/mambaforge
+# NOT mambaforge-pypy3 (openbabel is incompatible with pypy)
+
+RUN mamba install -c conda-forge numpy scipy rdkit
+
+RUN git clone https://github.com/forlilab/Meeko
+
+WORKDIR /Meeko
+RUN pip install -e .
+
+ADD Dockerfile_meeko .
