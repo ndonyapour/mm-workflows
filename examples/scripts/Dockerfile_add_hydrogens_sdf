@@ -1,0 +1,7 @@
+FROM condaforge/mambaforge
+# NOT mambaforge-pypy3 (rdkit is incompatible with pypy)
+
+RUN mamba install -c conda-forge rdkit
+
+ADD add_hydrogens_sdf.py .
+ADD Dockerfile_add_hydrogens_sdf .
