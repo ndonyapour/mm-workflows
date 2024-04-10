@@ -1,0 +1,8 @@
+
+steps:
+- config_tag_pdb:
+    in:
+      pdb_id: !ii "1k48"
+      filter: !ii  "False" # = do not 'clean' the pdb file.
+    out:
+    - output_config_string: !& pdb_id_str
