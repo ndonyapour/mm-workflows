@@ -18,11 +18,11 @@ steps:
       input_path: input_sdf_path
 
 - obmin:
-      in:
-        # Perform an initial minimization (only), i.e. do not search for conformers.
-        script: !ii /obminimize.sh # NOTE: Initial / required
-      out:
-      - output_mol2_path: !& ligand_min.mol2
+    in:
+      # Perform an initial minimization (only), i.e. do not search for conformers.
+      script: !ii /obminimize.sh # NOTE: Initial / required
+    out:
+    - output_mol2_path: !& ligand_min.mol2
 
 - convert_pdbqt:
     out:
