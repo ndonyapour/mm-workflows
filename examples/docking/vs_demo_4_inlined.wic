@@ -6,7 +6,7 @@ steps:
       # For example, the & and | (bitwise) operators have the precedence of their
       # boolean cousins, and and or. This is syntactically valid Python, however
       # the semantics are different.
-      query: !ii '(Kd_Ki == "Kd") and (value < 0.001)' 
+      query: !ii '(Kd_Ki == "Kd") and ((PDB_code == "4w9h") or (PDB_code == "1e3g"))' #'(Kd_Ki == "Kd") and (value < 0.2)' 
       max_row: !ii 1 #25 # Use 1 for CI
       convert_Kd_dG: !ii True
       output_txt_path: !ii binding_data.txt
@@ -579,6 +579,11 @@ steps:
     - output_log_path: !& vina_rescore.log
     - docking_score: !& docking_rescores
  
+- save_plot_data:
+    in:
+      labels: !* pdbids
+      xs: !* dGs
+      ys: !* docking_scores
 - scatter_plot:
     in:
       xs: !* dGs
@@ -609,3 +614,28 @@ wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
+
+# wic:
+#   graphviz:
+#     label: Virtual Screening 
+#   steps:
+#     (39, mdrun):
+#       wic:
+#         namespace: gpu  # To run MD on GPU
+#         graphviz:
+#           label: 'Molecular\nDynamics'
+#     (42, mdrun):
+#       wic:
+#         namespace: gpu  # To run MD on GPU
+#         graphviz:
+#           label: 'Molecular\nDynamics'
+#     (45, mdrun):
+#       wic:
+#         namespace: gpu  # To run MD on GPU
+#         graphviz:
+#           label: 'Molecular\nDynamics'
+#     (49, mdrun):
+#       wic:
+#         namespace: gpu  # To run MD on GPU
+#         graphviz:
+#           label: 'Molecular\nDynamics'
