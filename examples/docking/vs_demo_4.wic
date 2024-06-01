@@ -17,7 +17,7 @@ steps:
     - experimental_dGs: !& exp_dGs
     - pdb_ids: !& pdbids
 
-- extract_protein:
+  extract_protein:
     scatter: [input_pdb_path]
     in:
       input_pdb_path: !* pdbbind_pdbs
@@ -25,7 +25,7 @@ steps:
     out:
     - output_pdb_path: !& pdbbind_protein.pdb
 
-- config_tag_pdb:
+  config_tag_pdb:
     scatter: [pdb_id]
     in:
       pdb_id: !* pdbids

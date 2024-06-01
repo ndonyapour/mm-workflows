@@ -9,29 +9,24 @@ inputs:
     - edam:format_3814
 
 steps:
-# - add_hydrogens_sdf:
-#     in:
-#       input_sdf_path: ~input_sdf_path #'*pdbbind_sdfs'
-#       output_sdf_path: '&ligand_H.sdf'
-- convert_mol2:
-    in:
-      input_path: input_sdf_path
+  # - add_hydrogens_sdf:
+  #     in:
+  #       input_sdf_path: ~input_sdf_path #'*pdbbind_sdfs'
+  #       output_sdf_path: '&ligand_H.sdf'
+- id: convert_mol2
+  in:
+    input_path: input_sdf_path
 
-- obmin:
-    in:
-      # Perform an initial minimization (only), i.e. do not search for conformers.
-      script: !ii /obminimize.sh # NOTE: Initial / required
-    out:
-    - output_mol2_path: !& ligand_min.mol2
+- id: obmin
+  in:
+    # Perform an initial minimization (only), i.e. do not search for conformers.
+    script: !ii /obminimize.sh # NOTE: Initial / required
+  out:
+  - output_mol2_path: !& ligand_min.mol2
 
-- convert_pdbqt:
-    out:
-    - output_pdb_path: !& mol_prod.pdbqt
-      
-# - meeko_prepare_ligand:
-#     in:
-#       input_path:  '*ligand_H.sdf' #~input_sdf_path
-#       output_pdbqt_path: '&mol_prod.pdbqt'
+- id: convert_pdbqt
+  out:
+  - output_pdb_path: !& mol_prod.pdbqt
 
 - id: convert_mol2
   in:
