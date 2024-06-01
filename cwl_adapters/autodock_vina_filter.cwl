@@ -323,6 +323,32 @@ outputs:
           }
         }
 
+  pdb_ids:
+    label: The PDBID of structures (if any)
+    doc: |-
+      The PDBID of structures (if any)
+    type: ["null", {"type": "array", "items": "string"}]
+    outputBinding:
+      glob: indices.txt
+      loadContents: true
+      outputEval: |
+        ${
+          var lines = self[0].contents.split("\n");
+          var pdbids = [];
+          for (var i = 0; i < lines.length; i++) {
+            var indices = lines[i].split(" ");
+            if (indices.length > 4) {
+              var pdbid = indices[indices.length - 1];
+              pdbids.push(pdbid);
+            }
+          }
+          if (pdbids.length == 0) {
+            return null;
+          } else {
+            return pdbids;
+          }
+        }
+
 stdout: stdout
 
 $namespaces:
