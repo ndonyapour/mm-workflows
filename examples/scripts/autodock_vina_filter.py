@@ -104,16 +104,16 @@ if args.input_txt_path:  # If we have experimental data
         # to workaround the fact that for CWL scatter dotproduct, the arrays
         # must be the same length. This is why all 'extra' data must be
         # 'factored through' each filtering operation. :(
-        smiles = split[0]
+        pdbid = split[0]
         datum = float(split[1])
         temp_exp = []  # type: ignore #: List[Tuple[float, Tuple[int, int], float, float]]
         for mode_idx, score in enumerate(scores):
             if score < docking_score_cutoff and len(temp_exp) < max_num_poses_per_ligand:
                 if len(split) > 2:
                     dG = float(split[2])
-                    temp_exp.append((score, (mol_idx, mode_idx), datum, dG))
+                    temp_exp.append((score, (mol_idx, mode_idx), datum, dG, pdbid))
                 else:
-                    temp_exp.append((score, (mol_idx, mode_idx), datum))  # type: ignore
+                    temp_exp.append((score, (mol_idx, mode_idx), datum, pdbid))  # type: ignore
         for t1 in temp_exp:
             indexed_scores_exp.append(t1)
 
@@ -122,8 +122,8 @@ if args.input_txt_path:  # If we have experimental data
     # indexed_scores_exp.sort(key=lambda x: x[1]) # Sort by the index tuple, which uses dictionary order.
 
     indices_all = []
-    for (score, (mol_idx, mode_idx), datum, dG) in indexed_scores_exp:
-        indices_all.append(str(score) + " " + str(mol_idx) + " " + str(mode_idx) + " " + str(datum) + " " + str(dG))
+    for (score, (mol_idx, mode_idx), datum, dG, pdbid) in indexed_scores_exp:
+        indices_all.append(str(score) + " " + str(mol_idx) + " " + str(mode_idx) + " " + str(datum) + " " + str(dG) +  " "  + str(pdbid))
 
     with open('indices.txt', mode='w', encoding='utf-8') as f:
         f.write('\n'.join(indices_all))

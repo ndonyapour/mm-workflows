@@ -6,8 +6,8 @@ steps:
     # For example, the & and | (bitwise) operators have the precedence of their
     # boolean cousins, and and or. This is syntactically valid Python, however
     # the semantics are different.
-    query: !ii '(Kd_Ki == "Kd") and (value >= 0.053) and (value < 0.080)'  #'(Kd_Ki == "Kd") and (value <  0.2)'
-    max_row: !ii 150 #25 # Use 1 for CI
+    query: !ii '(Kd_Ki == "Kd") and ((PDB_code == "2xii") or (PDB_code == "6htg") or (PDB_code == "1e3g") or (PDB_code == "1fcx"))'  
+    max_row: !ii 4 #25 # Use 1 for CI
     convert_Kd_dG: !ii True
     output_txt_path: !ii binding_data.txt
   out:
@@ -111,7 +111,7 @@ steps:
     input_txt_path: !* binding_data.txt
     docking_score_cutoff: !ii -1.0
     max_num_poses_per_ligand: !ii 2
-    max_num_poses_total: !ii 150 #25 # Use 1 for CI same as max_row
+    max_num_poses_total: !ii 4 #25 # Use 1 for CI same as max_row
     rescore: !ii True
     input_ligand_pdbqt_path: !* ligand_rescore.pdbqt
     input_receptor_pdbqt_path: !* receptor_dup_2D.pdb
