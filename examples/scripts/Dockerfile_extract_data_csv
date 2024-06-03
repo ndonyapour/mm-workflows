@@ -1,0 +1,6 @@
+FROM condaforge/mambaforge-pypy3
+
+RUN mamba install -c conda-forge pandas
+
+ADD extract_data_csv.py .
+ADD Dockerfile_extract_data_csv .
