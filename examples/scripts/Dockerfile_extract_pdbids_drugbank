@@ -1,0 +1,7 @@
+FROM condaforge/mambaforge
+# NOT mambaforge-pypy3 (rdkit is incompatible with pypy)
+
+RUN mamba install -c conda-forge defusedxml rdkit
+
+ADD extract_pdbids_drugbank.py .
+ADD Dockerfile_extract_pdbids_drugbank .

@@ -1,0 +1,32 @@
+steps:
+  extract_data_csv:
+    in:
+      input_csv_path: !ii /polus1/donyapourn2/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Public.csv
+      max_row: !ii 300 #1 #300 # Use 1 for CI
+      column_name: !ii "Smiles"
+      output_txt_path: !ii smiles.txt
+    out:
+    - output_data : !& smiles
+  extract_pdbids_drugbank:
+    in:
+      drugbank_xml_file_path: !ii /polus1/donyapourn2/drugbank/databases/drugbank_5.1.10.xml
+      output_txt_path: !ii pdbids_data.txt
+      smiles: !* smiles
+    out:
+    - output_txt_path: !& pdbids_data.txt
+    - output_smiles: !& drugbank_smiles
+    - output_pdb_ids: !& drugbank_pdbids
+  config_tag_pdb:
+    scatter: [pdb_id]
+    in:
+      pdb_id: !* drugbank_pdbids
+      filter: !ii False
+    out:
+    - output_config_string: !& pdb_id_str
+  pdb:
+    scatter: [config]
+    in:
+      output_pdb_path: !ii rcsb_structure.pdb
+      config: !* pdb_id_str
+    out:
+    - output_pdb_path: !& rcsb_structure.pdb
