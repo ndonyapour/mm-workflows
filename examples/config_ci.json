@@ -6,7 +6,7 @@
     // need to manually exclude large workflows.
     // See https://en.wikipedia.org/wiki/Graph_isomorphism_problem
     "large_workflows": [
-        "elm", "vs_demo_2", "vs_demo_3", "vs_demo_4",
+        "elm", "vs_demo_2", "vs_demo_3",
         "vs_demo_2_weekly",
         "vs_demo_3_weekly",
         "vs_demo_4_weekly",
@@ -70,7 +70,6 @@
         "cwl_subinterpreter_ligand",
         "cwl_subinterpreter_protein",
         // Skip vs_demo_4 and run_diffdock so we don't accidentally DOS pdbbind.org.cn
-        "vs_demo_4",
         "run_diffdock"
     ],
     // Run computationally intensive stress tests weekly.
