@@ -12,8 +12,16 @@ requirements:
     listing: |
       ${
         var dat_file_contents = "";
+        var failed_count = 0
         for (var i = 0; i < inputs.labels.length; i++) {
-          dat_file_contents += inputs.labels[i] + "\t" + inputs.xs[i].toString() + "\t" + inputs.ys[i].toString()+ "\n";
+            if (inputs.ys[i] == null ||  inputs.ys2[i] == null) {
+                failed_count++;
+                dat_file_contents += inputs.labels[i] + "\n";
+            }
+            else{
+                dat_file_contents += inputs.labels[i] + "\t" + inputs.xs[i].toString() + "\t" + inputs.ys[i].toString()+ "\n";
+            }
+
          }
         // Note: Uses https://www.commonwl.org/v1.0/CommandLineTool.html#Dirent
         // and https://www.commonwl.org/user_guide/topics/creating-files-at-runtime.html
@@ -23,11 +31,6 @@ requirements:
       }
 
 inputs:
-  # results:
-  #   label: The results of compares
-  #   type:  {"type": "array", "items": "boolean"}
-  #   format: 
-  #   - edam:format_2330
 
   labels:
     label: The ids of the inputs
@@ -37,13 +40,19 @@ inputs:
 
   xs:
     label: The ids of the inputs
-    type: float[]
+    type: ["null", {"type": "array", "items": ["null", "float"]}]
     # format: 
     # - edam:format_2330
 
   ys:
     label: The ids of the inputs
-    type: float[]
+    type: ["null", {"type": "array", "items": ["null", "float"]}]
+    # format: 
+    # - edam:format_2330
+
+  ys2:
+    label: The ids of the inputs
+    type: ["null", {"type": "array", "items": ["null", "float"]}]
     # format: 
     # - edam:format_2330
    
