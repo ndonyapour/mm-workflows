@@ -11,14 +11,19 @@ doc: |-
 baseCommand: /gromacs/bin/gmx
 arguments: ["mdrun"]
 
+# requirements:
+#   EnvVarRequirement:
+#     envDef:
+#       CUDA_VISIBLE_DEVICES: 1,
+      
 hints:
   cwltool:CUDARequirement:
     cudaVersionMin: "11.8"  # 11.8 for gromacs 2023, 11.4 otherwise
     cudaComputeCapability: "3.0"
-    cudaDeviceCountMin: 1
-    cudaDeviceCountMax: 1
+    cudaDeviceCountMin: 8
+    cudaDeviceCountMax: 8
   DockerRequirement:
-    dockerPull: jakefennick/gromacs:2023.2 # ~2X performance improvement over gromacs 2022
+    dockerPull: ndonyapour/gromacs #jakefennick/gromacs:2023.2 # ~2X performance improvement over gromacs 2022
     # dockerPull: gromacs/gromacs:2022.2 # Compatible with AWS EC2 "P3" instance types.
     # dockerPull: gromacs/gromacs:2021.4 # uses CUDA 10.1 which is compatible with AWS EC2 "P2" instance types.
     # See https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing
