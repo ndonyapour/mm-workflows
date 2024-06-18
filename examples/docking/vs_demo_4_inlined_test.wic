@@ -6,8 +6,8 @@ steps:
     # For example, the & and | (bitwise) operators have the precedence of their
     # boolean cousins, and and or. This is syntactically valid Python, however
     # the semantics are different.
-    query: !ii '(Kd_Ki == "Kd") and (value < 0.2)'
-    max_row: !ii 500 #25 # Use 1 for CI
+    query: !ii '(Kd_Ki == "Kd") and ((PDB_code == "4w9h") or (PDB_code == "1e3g"))'
+    max_row: !ii 2 #25 # Use 1 for CI
     convert_Kd_dG: !ii True
     output_txt_path: !ii binding_data.txt
   out:
@@ -17,13 +17,13 @@ steps:
   - experimental_dGs: !& exp_dGs
   - pdb_ids: !& pdbids
 
-- id: extract_protein
-  scatter: [input_pdb_path]
-  in:
-    input_pdb_path: !* pdbbind_pdbs
-    output_pdb_path: !ii pdbbind_protein.pdb
-  out:
-  - output_pdb_path: !& pdbbind_protein.pdb
+# - id: extract_protein
+#   scatter: [input_pdb_path]
+#   in:
+#     input_pdb_path: !* pdbbind_pdbs
+#     output_pdb_path: !ii pdbbind_protein.pdb
+#   out:
+#   - output_pdb_path: !& pdbbind_protein.pdb
 - id: config_tag_pdb
   scatter: [pdb_id]
   in:
@@ -41,7 +41,7 @@ steps:
 
 - id: pdb_fixer
   in:
-    input_pdb_path: !* pdbbind_protein.pdb
+    input_pdb_path: !* pdbbind_pdbs
     input_helper_pdb_path: !* rcsb_protein.pdb # Note: PDBFixer utilizes sequence information from this file
     output_pdb_path: !ii pdbbind_pdbfixer.pdb
     add_atoms: !ii heavy
@@ -111,7 +111,7 @@ steps:
     input_txt_path: !* binding_data.txt
     docking_score_cutoff: !ii -1.0
     max_num_poses_per_ligand: !ii 2
-    max_num_poses_total: !ii 500 #25 # Use 1 for CI same as max_row
+    max_num_poses_total: !ii 1 #25 # Use 1 for CI same as max_row
     rescore: !ii True
     input_ligand_pdbqt_path: !* ligand_rescore.pdbqt
     input_receptor_pdbqt_path: !* receptor_dup_2D.pdb
@@ -120,6 +120,8 @@ steps:
   - output_receptor_pdbqt_path: !& receptor_filter.pdb
   - docking_scores: !& docking_scores
   - experimental_dGs: !& dGs
+  - pdb_ids: !& rscb_pdbids
+
 - id: pdb_fixer
   scatter: [input_pdb_path]
   in:
@@ -376,7 +378,7 @@ steps:
         rvdw: 1.4
         rcoulomb: 1.4
         #coulombtype: PME
-        nsteps: 1000
+        nsteps: 100
         emstep: 0.0001
         emtol: 100
         nstxout: 100
@@ -408,7 +410,7 @@ steps:
         rvdw: 1.4
         rcoulomb: 1.4
         #coulombtype: PME
-        nsteps: 1000
+        nsteps: 100
         emstep: 0.01
         emtol: 10
         nstxout: 100
@@ -438,7 +440,7 @@ steps:
         rvdw: 1.0
         rcoulomb: 1.0
         coulombtype: PME
-        nsteps: 10000
+        nsteps: 100
         dt: 0.002
         tc-grps: system
         ref-t: 298
@@ -469,7 +471,7 @@ steps:
 
 - id: config_tag_mdp
   in:
-    nsteps: !ii 10000
+    nsteps: !ii 100
     dt: !ii 0.002
     ref-t: !ii 298.0
     ref-p: !ii 1.0
@@ -482,8 +484,8 @@ steps:
         tc-grps: system
         tau-t: 2
         constraints: h-bonds
-        nstxout: 1000
-        nstenergy: 1000
+        nstxout: 100
+        nstenergy: 100
         pcoupl: Parrinello-Rahman
         tau-p: 1
         compressibility: 4.5e-5
@@ -579,32 +581,37 @@ steps:
   - output_log_path: !& vina_rescore.log
   - docking_score: !& docking_rescores
 
-- id: scatter_plot
+- id: save_plot_data
   in:
+    original_pdbids: !* pdbids
+    pdbids: !* rscb_pdbids
     xs: !* dGs
     ys: !* docking_scores
     ys2: !* docking_rescores
+    output_txt_path: !ii out.dat
+  out:
+  - output_txt_path: !& out.dat
 
 wic:
   graphviz:
     label: Virtual Screening 
   steps:
-    (40, mdrun):
+    (39, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
-    (43, mdrun):
+    (42, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
-    (46, mdrun):
+    (45, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
-    (50, mdrun):
+    (49, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:

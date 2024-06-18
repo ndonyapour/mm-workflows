@@ -6,8 +6,8 @@ steps:
     # For example, the & and | (bitwise) operators have the precedence of their
     # boolean cousins, and and or. This is syntactically valid Python, however
     # the semantics are different.
-    query: !ii '(Kd_Ki == "Kd") and ((PDB_code == "4w9h") or (PDB_code == "1e3g"))'
-    max_row: !ii 1 #25 # Use 1 for CI
+    query: !ii '(Kd_Ki == "Kd") and (value >= 0.053) and (value < 0.080)'  #'(Kd_Ki == "Kd") and (value <  0.2)'
+    max_row: !ii 150 #25 # Use 1 for CI
     convert_Kd_dG: !ii True
     output_txt_path: !ii binding_data.txt
   out:
@@ -17,13 +17,13 @@ steps:
   - experimental_dGs: !& exp_dGs
   - pdb_ids: !& pdbids
 
-# - id: extract_protein
-#   scatter: [input_pdb_path]
-#   in:
-#     input_pdb_path: !* pdbbind_pdbs
-#     output_pdb_path: !ii pdbbind_protein.pdb
-#   out:
-#   - output_pdb_path: !& pdbbind_protein.pdb
+- id: extract_protein
+  scatter: [input_pdb_path]
+  in:
+    input_pdb_path: !* pdbbind_pdbs
+    output_pdb_path: !ii pdbbind_protein.pdb
+  out:
+  - output_pdb_path: !& pdbbind_protein.pdb
 - id: config_tag_pdb
   scatter: [pdb_id]
   in:
@@ -41,7 +41,7 @@ steps:
 
 - id: pdb_fixer
   in:
-    input_pdb_path: !* pdbbind_pdbs
+    input_pdb_path: !* pdbbind_protein.pdb
     input_helper_pdb_path: !* rcsb_protein.pdb # Note: PDBFixer utilizes sequence information from this file
     output_pdb_path: !ii pdbbind_pdbfixer.pdb
     add_atoms: !ii heavy
@@ -111,7 +111,7 @@ steps:
     input_txt_path: !* binding_data.txt
     docking_score_cutoff: !ii -1.0
     max_num_poses_per_ligand: !ii 2
-    max_num_poses_total: !ii 1 #25 # Use 1 for CI same as max_row
+    max_num_poses_total: !ii 150 #25 # Use 1 for CI same as max_row
     rescore: !ii True
     input_ligand_pdbqt_path: !* ligand_rescore.pdbqt
     input_receptor_pdbqt_path: !* receptor_dup_2D.pdb
@@ -120,6 +120,8 @@ steps:
   - output_receptor_pdbqt_path: !& receptor_filter.pdb
   - docking_scores: !& docking_scores
   - experimental_dGs: !& dGs
+  - pdb_ids: !& rscb_pdbids
+
 - id: pdb_fixer
   scatter: [input_pdb_path]
   in:
@@ -581,33 +583,35 @@ steps:
 
 - id: save_plot_data
   in:
-    labels: !* pdbids
+    original_pdbids: !* pdbids
+    pdbids: !* rscb_pdbids
     xs: !* dGs
     ys: !* docking_scores
     ys2: !* docking_rescores
+    output_txt_path: !ii out.dat
   out:
-  - output_path: !& plot.txt
-
+  - output_txt_path: !& out.dat
+  
 wic:
   graphviz:
     label: Virtual Screening 
   steps:
-    (39, mdrun):
+    (40, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
-    (42, mdrun):
+    (43, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
-    (45, mdrun):
+    (46, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
           label: 'Molecular\nDynamics'
-    (49, mdrun):
+    (50, mdrun):
       wic:
         namespace: gpu  # To run MD on GPU
         graphviz:
