@@ -24,6 +24,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--min_row', required=False, type=int, default=1)
     parser.add_argument('--max_row', required=False, type=int, default=-1)
     parser.add_argument('--convert_Kd_dG', required=False, action='store_true')
+    parser.add_argument('--input_pdbids', nargs="*", type=str, default=[])
 
     args = parser.parse_args()
     return args
@@ -95,7 +96,7 @@ def read_index_file(index_file_path: str) -> pd.DataFrame:
 
 
 def load_data(index_file_name: str, base_dir: str, query: str, output_txt_path: str,
-              min_row: int = 1, max_row: int = -1, convert_Kd_dG: bool = False) -> None:
+              min_row: int = 1, max_row: int = -1, convert_Kd_dG: bool = False, input_pdbids: list[str] = []) -> None:
     """ Filters Kd data beased on a query
 
     Args:
@@ -115,6 +116,9 @@ def load_data(index_file_name: str, base_dir: str, query: str, output_txt_path: 
     # perform query
     df = df.query(query)
 
+    # if input_pdbids then filter using pdbids
+    if input_pdbids:
+        df = df[df['PDB_code'].isin(input_pdbids)]
     # Perform row slicing (if any)
     if int(min_row) != 1 or int(max_row) != -1:
         # We want to convert to zero-based indices and we also want
@@ -160,7 +164,8 @@ def main() -> None:
     """
     args = parse_arguments()
     load_data(args.index_file_name, args.base_dir, args.query, args.output_txt_path,
-              min_row=args.min_row, max_row=args.max_row, convert_Kd_dG=args.convert_Kd_dG)
+              min_row=args.min_row, max_row=args.max_row, convert_Kd_dG=args.convert_Kd_dG,
+              input_pdbids=args.input_pdbids)
 
 
 if __name__ == '__main__':

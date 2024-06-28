@@ -21,7 +21,7 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 
-def load_data(input_csv_path: str, query: str, column_name: str, output_txt_path: str, 
+def load_data(input_csv_path: str, query: str, column_name: str, output_txt_path: str,
               min_row: int = 1, max_row: int = -1) -> None:
     """ Reads SMILES strings and numerical binding affinity data from the given Excel spreadsheet using a Pandas query
 
@@ -61,7 +61,7 @@ def main() -> None:
     """
     args = parse_arguments()
 
-    load_data(args.input_csv_path, args.query, args.column_name, args.output_txt_path, 
+    load_data(args.input_csv_path, args.query, args.column_name, args.output_txt_path,
               args.min_row, args.max_row)
 
 

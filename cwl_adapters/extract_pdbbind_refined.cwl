@@ -110,6 +110,20 @@ inputs:
       position: 8
     default: False
 
+  input_pdbids:
+    label: List of input PDBIDs  # type: 
+    doc: |-
+      List of input PDBIDs
+      Type: string[]
+      File type: input
+      Accepted formats: list[string]
+    type: ["null", {"type": "array", "items": "string"}]
+    format: edam:format_2330
+    inputBinding:
+      prefix: --input_pdbids
+      position: 9
+    default: []
+
 outputs:
 
   output_txt_path:
