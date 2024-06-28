@@ -25,6 +25,8 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 # The code is adapted from https://github.com/dhimmel/drugbank/blob/gh-pages/parse.ipynb
+
+
 def parse_drugbank_xml(drugbank_xml_path: str) -> pd.DataFrame:
     """Parse the DrugBank XML file into a data frame
 
@@ -38,13 +40,13 @@ def parse_drugbank_xml(drugbank_xml_path: str) -> pd.DataFrame:
     inchikey_template = f"{ns}calculated-properties/{ns}property[{ns}kind='InChIKey']/{ns}value"
     inchi_template = f"{ns}calculated-properties/{ns}property[{ns}kind='InChI']/{ns}value"
     smiles_template = f"{ns}calculated-properties/{ns}property[{ns}kind='SMILES']/{ns}value"
-    
+
     xtree = ET.parse(drugbank_xml_path)
     root = xtree.getroot()
     rows = list()
     for drug in root:
         row = collections.OrderedDict()
-        
+
         row['name'] = drug.findtext(f"{ns}name")
         row['type'] = drug.get('type')
         row['drugbank_id'] = drug.findtext(ns + "drugbank-id[@primary='true']")
@@ -52,15 +54,15 @@ def parse_drugbank_xml(drugbank_xml_path: str) -> pd.DataFrame:
         row['inchi'] = drug.findtext(inchi_template)
         row['inchikey'] = drug.findtext(inchikey_template)
         row['smiles'] = drug.findtext(smiles_template)
-        
+
         pdb_ids = drug.find(f"{ns}pdb-entries")
         if pdb_ids is not None:
             target_ids = []
             for pdb_id in pdb_ids:
                 target_ids.append(str(pdb_id.text))
-        
+
             row['pdb_entries'] = ','.join(target_ids)
-                
+
         rows.append(row)
 
     columns = ['drugbank_id', 'name', 'type', 'groups', 'inchi', 'inchikey', 'smiles', 'pdb_entries']
@@ -90,11 +92,11 @@ def smiles_to_inchi(smiles: str) -> Optional[str]:
         return None
     # Convert molecule to InChI
     inchi = Chem.MolToInchi(mol)
-    
+
     return inchi
 
 
-def extract_pdbids_drugbank(drugbank_xml_file_path: str, smiles: list[str], inchi: list[str], inchi_keys: list[str], output_txt_path:str) -> None:
+def extract_pdbids_drugbank(drugbank_xml_file_path: str, smiles: list[str], inchi: list[str], inchi_keys: list[str], output_txt_path: str) -> None:
     """ Filter DrugBank based on a list of small molecules
 
     Args:
@@ -104,7 +106,7 @@ def extract_pdbids_drugbank(drugbank_xml_file_path: str, smiles: list[str], inch
         inchi_keys (list[str]): The list of InChI key of small molecules 
         output_log_path (str): The path to the output log file
     """
-    
+
     drugbank = parse_drugbank_xml(drugbank_xml_file_path)
 
     if smiles:
@@ -119,7 +121,7 @@ def extract_pdbids_drugbank(drugbank_xml_file_path: str, smiles: list[str], inch
 
     elif inchi_keys:
         filtered_df = drugbank[drugbank["inchikey"].isin(inchi_keys)]
-        
+
     with Path.open(Path(output_txt_path), mode="w", encoding="utf-8") as f:
         for _, row in filtered_df.iterrows():
             if row["pdb_entries"]:

@@ -16,17 +16,21 @@ steps:
     - output_txt_path: !& pdbids_data.txt
     - output_smiles: !& drugbank_smiles
     - output_pdb_ids: !& drugbank_pdbids
-  config_tag_pdb:
-    scatter: [pdb_id]
+  extract_pdbbind_refined:
     in:
-      pdb_id: !* drugbank_pdbids
-      filter: !ii False
+      # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html
+      # The query() method uses a slightly modified Python syntax by default.
+      # For example, the & and | (bitwise) operators have the precedence of their
+      # boolean cousins, and and or. This is syntactically valid Python, however
+      # the semantics are different.
+      query: !ii '(Kd_Ki == "Kd")'
+      input_pdbids: !* drugbank_pdbids
+      max_row: !ii 300 #25 # Use 1 for CI
+      convert_Kd_dG: !ii True
+      output_txt_path: !ii binding_data.txt
     out:
-    - output_config_string: !& pdb_id_str
-  pdb:
-    scatter: [config]
-    in:
-      output_pdb_path: !ii rcsb_structure.pdb
-      config: !* pdb_id_str
-    out:
-    - output_pdb_path: !& rcsb_structure.pdb
+    - output_txt_path: !& binding_data.txt
+    - output_pdb_paths: !& pdbbind_pdbs
+    - output_sdf_paths: !& pdbbind_sdfs
+    - experimental_dGs: !& exp_dGs
+    - pdb_ids: !& pdbids

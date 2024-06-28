@@ -11,5 +11,5 @@ RUN tar -xvf PDBbind_v2020_refined.tar.gz
 RUN mamba install -c conda-forge pandas
 
 # The Docker image is generated on the fly, so we cannot pass any local files.
-RUN wget --no-clobber -L https://raw.githubusercontent.com/PolusAI/mm-workflows/main/examples/scripts/generate_pdbbind_complex.py
+RUN wget --no-clobber -L https://raw.githubusercontent.com/ndonyapour/mm-workflows/extract_pdbids_drugbank/examples/scripts/generate_pdbbind_complex.py
 RUN wget --no-clobber -L https://raw.githubusercontent.com/PolusAI/mm-workflows/main/examples/scripts/Dockerfile_pdbbind_refined
