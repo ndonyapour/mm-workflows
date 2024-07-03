@@ -1,0 +1,16 @@
+steps:
+
+- id: stage_tpr
+  in: 
+    input_tpr_path1: !ii /polus2/donyapourn2/projects/test_tools/inputs/system_failed_md.tpr
+    input_tpr_path2: !ii /polus2/donyapourn2/projects/test_tools/inputs/system.tpr
+  out:
+  - output_tpr_paths: !& tprs
+
+- id: mdrun
+  scatter: [input_tpr_path]
+  in:
+    output_edr_path: !ii npt1.edr
+    output_crd_path: !ii npt1.gro  # Explicitly specify for rmsd
+  out:
+  - output_crd_path: !& npt1.gro

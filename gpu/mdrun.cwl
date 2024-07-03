@@ -15,8 +15,8 @@ hints:
   cwltool:CUDARequirement:
     cudaVersionMin: "11.8"  # 11.8 for gromacs 2023, 11.4 otherwise
     cudaComputeCapability: "3.0"
-    cudaDeviceCountMin: 1
-    cudaDeviceCountMax: 1
+    cudaDeviceCountMin: 8
+    cudaDeviceCountMax: 8
   DockerRequirement:
     dockerPull: jakefennick/gromacs:2023.2 # ~2X performance improvement over gromacs 2022
     # dockerPull: gromacs/gromacs:2022.2 # Compatible with AWS EC2 "P3" instance types.
