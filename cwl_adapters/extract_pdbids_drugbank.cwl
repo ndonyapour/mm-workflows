@@ -30,9 +30,7 @@ inputs:
     format: edam:format_2332
     inputBinding:
       prefix: --drugbank_xml_file_path
-    default:
-      class: File
-      location: ../../../fda_drug_dataset/drugbank/drugbank_5.1.10.xml
+
   smiles:
     label: List of input SMILES  # type: 
     doc: |-
