@@ -1,0 +1,9 @@
+steps:
+- id: extract_data_csv
+  in:
+    input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Public.csv
+    max_row: !ii 300 #1 #300 # Use 1 for CI
+    column_name: !ii "Smiles"
+    output_txt_path: !ii smiles.txt
+  out:
+  - output_data : !& smiles
