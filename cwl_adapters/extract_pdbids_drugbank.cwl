@@ -124,10 +124,10 @@ outputs:
             return smiles;
         }
 
-  output_pdb_ids:
-    label: The PDB IDs of target structures
+  output_pdbids_1D:
+    label: The PDB IDs of target structures in 1D array 
     doc: |-
-      The Smiles of small molecules
+      The PDB IDs of target structures in 1D array 
     type: 
       type: array
       items: string
@@ -149,6 +149,33 @@ outputs:
                 }
               }
             return pdbids;
+        }
+
+  output_pdbids_2D:
+    label: The PDB IDs of target structures in 2D array 
+    doc: |-
+      The PDB IDs of target structures in 2D array 
+    type: {"type": "array", "items": {"type": "array", "items": "string"}}
+    outputBinding:
+      glob: $(inputs.output_txt_path)
+      loadContents: true
+      outputEval: |
+        ${
+            var lines = self[0].contents.split("\n");
+            // remove black lines
+            lines = lines.filter(function(line) {return line.trim() !== '';});
+            var pdbids_2d = [];
+            for (var i = 0; i < lines.length; i++) {
+              // The format of the lines is as follows: NC1=NC=NN2C1=CC=C2[C@@]1(O[C@H](CO)[C@@H](O)[C@H]1O)C#N,7bf6,7qg7
+              // The first item is the SMILES notation and the rest are the target structure PDB IDs.
+                var words = lines[i].split(",").map(function(item) {return item.trim();});
+                var pdbids = [];
+                for (var j = 1; j < words.length; j++) {
+                      pdbids.push(words[j]);
+                }
+                pdbids_2d.push(pdbids);
+              }
+            return pdbids_2d;
         }
 
 $namespaces:
