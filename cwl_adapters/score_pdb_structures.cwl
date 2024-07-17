@@ -3,10 +3,10 @@ cwlVersion: v1.0
 
 class: CommandLineTool
 
-label: Fetches the PDB information from RCSB, and scores a list of PDB structures.
+label: Fetches the PDB information from RCSB and scores PDB structures.
 
 doc: |-
-  Fetches the PDB information from RCSB, and scores a list of PDB structures.
+  Fetches the PDB information from RCSB and scores PDB structures.
 
 baseCommand: ['python3', '/score_pdb_structures.py']
 

@@ -3,10 +3,9 @@ cwlVersion: v1.0
 
 class: CommandLineTool
 
-label: Convert a 2D array to a 1D array
-
+label: flatten a 2D array to 1D array
 doc: |-
-  Download the PDBbind refined database
+  flatten a 2D array to 1D array
 
 baseCommand: python3
 
