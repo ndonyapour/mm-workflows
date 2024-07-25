@@ -21,7 +21,7 @@ inputs:
       Type: string[][]
       File type: input
       Accepted formats: list[list[string]]
-    type: ["null", {"type": "array", "items": {"type": "array", "items": "string"}}]
+    type: ["null", {"type": "array", "items": ["null", {"type": "array", "items": "string"}]}]
     format: edam:format_2330
 
 outputs:
@@ -36,10 +36,17 @@ outputs:
       outputEval: |
         ${
           var pdbids_2d = [];
+          if (inputs.input_2D_array == null){
+            return null;
+          }
           for (var i = 0; i < inputs.input_2D_array.length; i++) {
             var pdbids_1d = inputs.input_2D_array[i];
-            for (var j = 0; j < pdbids_1d.length; j++){
-              pdbids_2d.push(pdbids_1d[j]);
+            if (pdbids_1d != null) {
+              for (var j = 0; j < pdbids_1d.length; j++){
+                if (pdbids_1d[j] != null){
+                  pdbids_2d.push(pdbids_1d[j]);
+                }
+              }
             }
           }
         return pdbids_2d;

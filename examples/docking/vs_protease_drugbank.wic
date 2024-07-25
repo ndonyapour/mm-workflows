@@ -2,7 +2,7 @@ steps:
 - id: extract_data_csv
   in:
     input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Public.csv
-    max_row: !ii 10 #1 #300 # Use 1 for CI
+    max_row: !ii 10 # Use 1 for CI
     column_name: !ii "Smiles"
     output_txt_path: !ii smiles.txt
   out:
@@ -18,21 +18,39 @@ steps:
   - output_smiles: !& drugbank_smiles
   - output_pdbids_2D: !& drugbank_pdbids
 
-- id: score_pdb_structures
+- id: filter_pdb_structures
   scatter: [input_pdbids]
   in: 
     input_pdbids: !* drugbank_pdbids
-    max_row: !ii 1
+    oligomeric_states: !ii ["monomer"] # "homo 2-mer"]
+    output_txt_path: !ii filtered_pdbs.txt
+  out:
+  - output_txt_path: !& filtered_pdbs.txt
+  - output_pdbids: !& filtered_pdbids
+
+- id: score_pdb_structures
+  scatter: [input_pdbids]
+  in: 
+    input_pdbids: !* filtered_pdbids
+    max_row: !ii 1 # for each compound we select one pdb structure
     output_txt_path: !ii scored_pdbs.txt
   out:
   - output_txt_path: !& scored_pdbs.txt
   - output_pdbids: !& scored_pdbids
 
-- id: convert_2D_to_1D
+- id: flatten_2D_to_1D
   in: 
     input_2D_array: !* scored_pdbids
   out:
   - output_1D_array: !& scored_pdbids_1D
+
+- id: match_pdbids_smiles
+  in: 
+    filtered_pdbids: !* scored_pdbids_1D
+    pdbids: !* drugbank_pdbids
+    smiles: !* drugbank_smiles
+  out:
+  - filtered_smiles: !& scored_smiles_1D
   
 # - id: extract_protein
 #   scatter: [input_pdb_path]

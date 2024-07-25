@@ -1,0 +1,6 @@
+FROM condaforge/mambaforge-pypy3
+
+RUN mamba install -c conda-forge pandas
+
+ADD filter_pdb_structures.py  .
+ADD Dockerfile_filter_pdb_structures .
