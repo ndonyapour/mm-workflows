@@ -1,4 +1,5 @@
 # pylint: disable=import-outside-toplevel,no-member
+import sys
 import requests
 import argparse
 import time 
@@ -16,7 +17,7 @@ def parse_arguments() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--input_pdbids', nargs="*", type=str, default=[])
+    parser.add_argument('--input_pdbids', nargs="+", type=str)
     parser.add_argument('--output_txt_path', type=str)
     parser.add_argument('--min_row',  required=False, type=int, default=1)
     parser.add_argument('--max_row', required=False, type=int, default=-1)
@@ -169,9 +170,13 @@ def main() -> None:
     Reads the command line arguments, loads the PDB information, and scores a list of PDB structures.
     """
     args = parse_arguments()
-    filter_pdbs(args.input_pdbids, args.output_txt_path,
-              min_row=args.min_row, max_row=args.max_row, 
-              timeout_duration=args.timeout_duration, max_retries=args.max_retries)
+    if args.input_pdbids:
+        filter_pdbs(args.input_pdbids, args.output_txt_path,
+                    min_row=args.min_row, max_row=args.max_row, 
+                    timeout_duration=args.timeout_duration, max_retries=args.max_retries)
+    else:
+        print("Error: No input is provided")
+        sys.exit(1)
 
 
 if __name__ == '__main__':

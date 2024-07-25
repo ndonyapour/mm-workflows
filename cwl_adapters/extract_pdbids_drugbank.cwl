@@ -117,9 +117,10 @@ outputs:
               // The first item is the SMILES notation. We need to duplicate it, so each SMILES string 
               // corresponds to a PDB ID in the PDB IDs array. 
                 var words = lines[i].split(",").map(function(item) {return item.trim();});
-                for (var j = 1; j < words.length; j++) {
-                      smiles.push(words[0]);
-                }
+                // for (var j = 1; j < words.length; j++) {
+                //       smiles.push(words[0]);
+                // }
+                smiles.push(words[0]); // append the smiles
               }
             return smiles;
         }

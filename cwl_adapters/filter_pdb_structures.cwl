@@ -3,16 +3,16 @@ cwlVersion: v1.0
 
 class: CommandLineTool
 
-label: Fetches the PDB information from RCSB and scores PDB structures.
+label: Filter PDB IDs based on the specified oligomeric state
 
 doc: |-
-  Fetches the PDB information from RCSB and scores PDB structures.
+  Filter PDB IDs based on the specified oligomeric state
 
-baseCommand: ['python3', '/score_pdb_structures.py']
+baseCommand: ['python3', '/filter_pdb_structures.py']
 
 hints:
   DockerRequirement:
-    dockerPull: ndonyapour/score_pdb_structures
+    dockerPull: ndonyapour/filter_pdb_structures
 
 requirements:
   InlineJavascriptRequirement: {}
@@ -30,28 +30,7 @@ inputs:
     format: edam:format_2330
     inputBinding:
       prefix: --input_pdbids
-
-  min_row:
-    label: The row min index
-    doc: |-
-      The row min inex
-      Type: int
-    type: int?
-    format:
-    - edam:format_2330
-    inputBinding:
-      prefix: --min_row
-
-  max_row:
-    label: The row max index
-    doc: |-
-      The row max inex
-      Type: int
-    type: int?
-    format:
-    - edam:format_2330
-    inputBinding:
-      prefix: --max_row
+    default: []
 
   output_txt_path:
     label: Path to the text dataset file
@@ -67,29 +46,20 @@ inputs:
       prefix: --output_txt_path
     default: system.log
 
-  timeout_duration:
-    label: The maximum time in seconds to wait for a response from the API before timing out
-    doc: |-
-      The maximum time in seconds to wait for a response from the API before timing out
-      Type: int
-    type: int?
-    format:
-    - edam:format_2330
-    inputBinding:
-      prefix: --timeout_duration
-    default: 10
 
-  max_retries:
-    label: The maximum number of times to retry the request in case of failure
+  oligomeric_states:
+    label: Oligomeric state of the protein
     doc: |-
-      The maximum number of times to retry the request in case of failure
-      Type: int
-    type: int?
+      Oligomeric state of the protein
+      Type: string
+      File type: output
+      Accepted formats: txt
+    type: string[]
     format:
     - edam:format_2330
     inputBinding:
-      prefix: --max_retries
-    default: 5
+      prefix: --oligomeric_states
+    default: [monomer]
 
 outputs:
   output_txt_path:
@@ -120,6 +90,9 @@ outputs:
           lines = lines.filter(function(line) {return line.trim() !== '';});
           // The outpus file has one line 
           // The format of the line is as follows: 6x7z,4yo7,5fyr,6ktl,4rxm,4irx,3v16,6b5z,4mio,7d5n
+          if (lines.length == 0){
+            return null;
+          }
           var pdb_ids = [];
           for (var i = 0; i < lines.length; i++) {
             var words = lines[i].split(",").map(function(item) {return item.trim();});
