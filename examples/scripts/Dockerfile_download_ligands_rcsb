@@ -1,0 +1,7 @@
+FROM condaforge/mambaforge
+# NOT mambaforge-pypy3 (rdkit is incompatible with pypy)
+
+RUN mamba install -c conda-forge rdkit
+
+ADD download_ligands_rcsb.py .
+ADD Dockerfile_download_ligands_rcsb .

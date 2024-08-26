@@ -51,6 +51,16 @@ steps:
     smiles: !* drugbank_smiles
   out:
   - filtered_smiles: !& scored_smiles_1D
+
+- id: download_ligands_rcsb
+  scatter: [pdbid]
+  in: 
+    pdbid: !* scored_pdbids_1D
+  out:
+  - output_txt_path: !& ligands.txt
+  - output_sdf_paths: !& ligands_sdf
+
+
   
 # - id: extract_protein
 #   scatter: [input_pdb_path]

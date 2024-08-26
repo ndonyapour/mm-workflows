@@ -165,9 +165,9 @@ outputs:
     format: edam:format_1476
 
   output_sdf_paths:
-    label: Path to the input file
+    label: Path to the output file
     doc: |-
-      Path to the input file
+      Path to the output file
       Type: string
       File type: input
       Accepted formats: sdf
