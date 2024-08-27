@@ -3,33 +3,46 @@ cwlVersion: v1.0
 
 class: CommandLineTool
 
-label: Downloads SDF files for ligands of a given PDB entry ID.
+label: Returns the SDF file that corresponds to the given SMILES
 
 doc: |-
-  Downloads SDF files for ligands of a given PDB entry ID.
+  Returns the SDF file that corresponds to the given SMILES
 
-baseCommand: ['python3', '/download_ligands_rcsb.py']
+baseCommand: ['python3', '/match_sdf_smiles.py']
 
 hints:
   DockerRequirement:
-    dockerPull: ndonyapour/download_ligands_rcsb
+    dockerPull: ndonyapour/match_sdf_smiles
 
 requirements:
   InlineJavascriptRequirement: {}
 
 
 inputs:
-  pdbid:
-    label: The PDBID for downloading small molecule SDF files.
+  input_sdf_paths:
+    label: List of input SDF files
     doc: |-
-      The PDBID for downloading small molecule SDF files.
+      List of input SDF files
+      Type: File[]
+      File type: input
+      Accepted formats: sdf
+    type: File[]
+    format: edam:format_3814
+    inputBinding:
+      prefix: --input_sdf_paths
+
+  smiles:
+    label: SMILES of the small molecule to match
+    doc: |-
+      SMILES of the small molecule to match
       Type: string
       File type: input
-      Accepted formats: string
-    type: string?
-    format: edam:format_2330
+      Accepted formats: txt
+    type: string
+    format:
+    - edam:format_2330
     inputBinding:
-      prefix: --pdbid
+      prefix: --smiles
 
   output_txt_path:
     label: Path to the text dataset file
@@ -79,35 +92,32 @@ outputs:
       glob: $(inputs.output_txt_path)
     format: edam:format_2330
 
-  output_sdf_paths:
-    label: The SDF file paths
-    doc: |-
-      The SDF file paths
-      Type: string
-      File type: output
-      Accepted formats: sdf
-    type: ["null", {"type": "array", "items": "File"}]
-    outputBinding:
-      glob: $(inputs.output_txt_path)
-      loadContents: true
-      outputEval: |
-        ${
-          // check if self[0] exists
-          if (!self[0]) {
-            return null;
-          }
-          var lines = self[0].contents.split("\n");
-          // remove black lines
-          lines = lines.filter(function(line) {return line.trim() !== '';});
+  # output_sdf_paths:
+  #   label: The SDF file paths
+  #   doc: |-
+  #     The SDF file paths
+  #   type: ["null", {"type": "array", "items": "File"}]
+  #   outputBinding:
+  #     glob: $(inputs.output_txt_path)
+  #     loadContents: true
+  #     outputEval: |
+  #       ${
+  #         // check if self[0] exists
+  #         if (!self[0]) {
+  #           return null;
+  #         }
+  #         var lines = self[0].contents.split("\n");
+  #         // remove black lines
+  #         lines = lines.filter(function(line) {return line.trim() !== '';});
 
-          var sdfs = [];
-          for (var i = 0; i < lines.length; i++) {
-            var sdfpath = lines[i].split(",").map(function(item) {return item.trim();})[0];
-            var sdffile = {"class": "File", "path": sdfpath};
-            sdfs.push(sdffile);
-          }
-          return sdfs;
-        }
+  #         var sdfs = [];
+  #         for (var i = 0; i < lines.length; i++) {
+  #           var sdfpath = lines[i].split(",").map(function(item) {return item.trim();})[0];
+  #           var sdffile = {"class": "File", "path": sdfpath};
+  #           sdfs.push(sdffile);
+  #         }
+  #         return sdfs;
+  #       }
 
 $namespaces:
   edam: https://edamontology.org/

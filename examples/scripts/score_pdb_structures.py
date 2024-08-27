@@ -17,12 +17,12 @@ def parse_arguments() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--input_pdbids', nargs="+", type=str)
+    parser.add_argument('--input_pdbids', nargs='+', type=str)
     parser.add_argument('--output_txt_path', type=str)
     parser.add_argument('--min_row',  required=False, type=int, default=1)
     parser.add_argument('--max_row', required=False, type=int, default=-1)
-    parser.add_argument("--timeout_duration", required=False, type=int, default=10)
-    parser.add_argument("--max_retries", required=False, type=int, default=5)
+    parser.add_argument('--timeout_duration', required=False, type=int, default=10)
+    parser.add_argument('--max_retries', required=False, type=int, default=5)
     
     args = parser.parse_args()
     return args

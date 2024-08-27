@@ -56,10 +56,21 @@ steps:
   scatter: [pdbid]
   in: 
     pdbid: !* scored_pdbids_1D
+    output_txt_path: !ii ligands.txt
   out:
   - output_txt_path: !& ligands.txt
   - output_sdf_paths: !& ligands_sdf
 
+- id: match_sdf_smiles
+  scatter: [input_sdf_paths, smiles]
+  scatterMethod: dotproduct
+  in: 
+    input_sdf_paths: !* ligands_sdf
+    smiles: !* scored_smiles_1D
+    output_txt_path: !ii selected_ligands.txt
+  out:
+  - output_txt_path: !& selected_ligands.txt
+  # - output_sdf_paths: !& ligands_sdf
 
   
 # - id: extract_protein
