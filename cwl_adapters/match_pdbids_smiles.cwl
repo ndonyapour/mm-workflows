@@ -63,14 +63,45 @@ outputs:
 
           for (var i = 0; i < inputs.filtered_pdbids.length; i++) {
             var pdbid = inputs.filtered_pdbids[i];
+ 
             for (var j = 0; j < inputs.pdbids.length; j++) {
               var pdbids = inputs.pdbids[j];
               if (pdbids.includes(pdbid)){
-                smiles.push(inputs.smiles[j]);  
+                smiles.push(inputs.smiles[j]); 
               }
             }
           }  
         return smiles;
+        }
+
+  # PDbids can be shared between multiple ligands. 
+  # So to have the same size pdbids we need to recontruct it again
+  output_filtered_pdbids:
+    label: Output matched SMILES of input filtered PDBIDs 
+    doc: |-
+      Output matched SMILES of input filtered PDBIDs
+    type: 
+      type: array
+      items: string
+    outputBinding:
+      outputEval: |
+        ${
+          var output_pdbids = [];
+          if (inputs.filtered_pdbids == null){
+            return null;
+          }
+
+          for (var i = 0; i < inputs.filtered_pdbids.length; i++) {
+            var pdbid = inputs.filtered_pdbids[i];
+ 
+            for (var j = 0; j < inputs.pdbids.length; j++) {
+              var pdbids = inputs.pdbids[j];
+              if (pdbids.includes(pdbid)){
+                output_pdbids.push(pdbid); 
+              }
+            }
+          }  
+        return output_pdbids;
         }
 
 $namespaces:

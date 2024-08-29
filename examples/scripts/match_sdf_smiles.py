@@ -1,6 +1,7 @@
 # pylint: disable=import-outside-toplevel,no-member
 import sys
 import argparse
+import subprocess
 from rdkit import Chem
 import os
 from pathlib import Path
@@ -15,7 +16,7 @@ def parse_arguments() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--input_sdf_paths', nargs='+', type=str)
+    parser.add_argument('--input_sdf_paths', nargs='*', type=str)
     parser.add_argument('--smiles', type=str)
     parser.add_argument('--output_txt_path', type=str)
     #parser.add_argument('--output_sdf_path', type=str)
@@ -65,14 +66,15 @@ def get_canonical_smiles(smiles) -> str:
     return Chem.MolToSmiles(mol)
 
 
-def math_sdf_smiles(input_sdf_path: list[str], smiles: str, output_txt_path: str) -> None:
+def math_sdf_smiles(input_sdf_paths: list[str], smiles: str, output_txt_path: str) -> None:
     
     canonical_smiles = get_canonical_smiles(smiles)
     selected_files: list[str] = []
     for sdf_file_path in input_sdf_paths:
         sdf_smiles = sdf_to_canonical_smiles(sdf_file_path)
         if sdf_smiles == canonical_smiles:
-            selected_files.append(sdf_file_path)
+            selected_files.append(Path(sdf_file_path).name)
+            subprocess.run(["cp", f"{sdf_file_path}", f"{Path(sdf_file_path).name}"], check=True)
     
     # Write the SDF file names to a txt file
     with Path.open(Path(output_txt_path), mode='w', encoding='utf-8') as f:

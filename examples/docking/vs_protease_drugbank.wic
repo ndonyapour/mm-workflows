@@ -2,7 +2,7 @@ steps:
 - id: extract_data_csv
   in:
     input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Public.csv
-    max_row: !ii 10 # Use 1 for CI
+    max_row: !ii 300 # Use 1 for CI
     column_name: !ii "Smiles"
     output_txt_path: !ii smiles.txt
   out:
@@ -51,27 +51,38 @@ steps:
     smiles: !* drugbank_smiles
   out:
   - filtered_smiles: !& scored_smiles_1D
+  - output_filtered_pdbids: !& output_scored_pdbids_1D
 
 - id: download_ligands_rcsb
-  scatter: [pdbid]
+  scatter: [pdbid, smiles]
+  scatterMethod: dotproduct
   in: 
-    pdbid: !* scored_pdbids_1D
+    smiles: !* scored_smiles_1D
+    pdbid: !* output_scored_pdbids_1D
     output_txt_path: !ii ligands.txt
   out:
   - output_txt_path: !& ligands.txt
   - output_sdf_paths: !& ligands_sdf
+  - output_smiles: !& output_smiles
 
 - id: match_sdf_smiles
   scatter: [input_sdf_paths, smiles]
   scatterMethod: dotproduct
   in: 
     input_sdf_paths: !* ligands_sdf
-    smiles: !* scored_smiles_1D
+    smiles: !* output_smiles
     output_txt_path: !ii selected_ligands.txt
   out:
   - output_txt_path: !& selected_ligands.txt
-  # - output_sdf_paths: !& ligands_sdf
+  - output_sdf_paths: !& matched_ligands_sdf
 
+- id: select_single_ligands
+  in: 
+    input_sdf_paths: !* matched_ligands_sdf
+  out:
+  - sdf_cnts: !& lig_cnts
+  - sdf_files: !& sdf_files
+  - pdb_ids: !& pdb_ids
   
 # - id: extract_protein
 #   scatter: [input_pdb_path]

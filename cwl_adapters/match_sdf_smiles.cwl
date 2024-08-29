@@ -26,7 +26,7 @@ inputs:
       Type: File[]
       File type: input
       Accepted formats: sdf
-    type: File[]
+    type: ["null", {"type": "array", "items": "File"}]
     format: edam:format_3814
     inputBinding:
       prefix: --input_sdf_paths
@@ -35,7 +35,7 @@ inputs:
     label: SMILES of the small molecule to match
     doc: |-
       SMILES of the small molecule to match
-      Type: string
+      Type: string?
       File type: input
       Accepted formats: txt
     type: string
@@ -92,32 +92,33 @@ outputs:
       glob: $(inputs.output_txt_path)
     format: edam:format_2330
 
-  # output_sdf_paths:
-  #   label: The SDF file paths
-  #   doc: |-
-  #     The SDF file paths
-  #   type: ["null", {"type": "array", "items": "File"}]
-  #   outputBinding:
-  #     glob: $(inputs.output_txt_path)
-  #     loadContents: true
-  #     outputEval: |
-  #       ${
-  #         // check if self[0] exists
-  #         if (!self[0]) {
-  #           return null;
-  #         }
-  #         var lines = self[0].contents.split("\n");
-  #         // remove black lines
-  #         lines = lines.filter(function(line) {return line.trim() !== '';});
+  output_sdf_paths:
+    label: The SDF file paths
+    doc: |-
+      The SDF file paths
+    type: ["null", {"type": "array", "items": "File"}]
+    outputBinding:
+      glob: $(inputs.output_txt_path)
+      loadContents: true
+      outputEval: |
+        ${
+          // check if self[0] exists
+          if (!self[0]) {
+            return null;
+          }
+          var lines = self[0].contents.split("\n");
+          // remove black lines
+          lines = lines.filter(function(line) {return line.trim() !== '';});
 
-  #         var sdfs = [];
-  #         for (var i = 0; i < lines.length; i++) {
-  #           var sdfpath = lines[i].split(",").map(function(item) {return item.trim();})[0];
-  #           var sdffile = {"class": "File", "path": sdfpath};
-  #           sdfs.push(sdffile);
-  #         }
-  #         return sdfs;
-  #       }
+          var sdfs = [];
+          for (var i = 0; i < lines.length; i++) {
+            var sdfpath = lines[i].split(",").map(function(item) {return item.trim();})[0];
+            var sdffile = {"class": "File", "path": sdfpath};
+            sdfs.push(sdffile);
+          }
+          return sdfs;
+        }
+    format: edam:format_3814
 
 $namespaces:
   edam: https://edamontology.org/

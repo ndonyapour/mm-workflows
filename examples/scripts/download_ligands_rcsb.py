@@ -17,6 +17,7 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     
     parser.add_argument('--pdbid', type=str)
+    parser.add_argument('--smiles', type=str)
     parser.add_argument('--output_txt_path', type=str)
     # parser.add_argument("--timeout_duration", required=False, type=int, default=10)
     # parser.add_argument("--max_retries", required=False, type=int, default=5)
@@ -25,7 +26,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 # The code has been adapted from https://bioinformatics.stackexchange.com/questions/8583/retrieve-id-ligand-from-pdb-file
-def download_ligands(pdbid: str, output_txt_path: str) -> None:
+def download_ligands(pdbid: str, smiles: str, output_txt_path: str) -> None:
     """
     Downloads SDF files for ligands of a given PDB entry ID.
 
@@ -40,7 +41,12 @@ def download_ligands(pdbid: str, output_txt_path: str) -> None:
     parsed = json.loads(response.content.decode())
 
     # Extract non-polymer entity IDs
-    parsed_lig = parsed["rcsb_entry_container_identifiers"]["non_polymer_entity_ids"]
+    try:
+        parsed_lig = parsed["rcsb_entry_container_identifiers"]["non_polymer_entity_ids"]
+    except:
+        # file = Path.open(Path(output_txt_path), mode='w', encoding='utf-8')
+        # file.close()
+        return None
 
     # Loop through each ligand ID
     for lig in parsed_lig:
@@ -64,7 +70,7 @@ def download_ligands(pdbid: str, output_txt_path: str) -> None:
 
     # Download SDF files
     cnt: int = 1
-    sdf_file_names: list[str] = []
+    sdf_file_names: list[str] = [smiles]
     for lig in parsed_lig_dict:
         for chain in parsed_lig_dict[lig][1]:
             seq_id: str = parsed_lig_dict[lig][1][chain]
@@ -77,7 +83,7 @@ def download_ligands(pdbid: str, output_txt_path: str) -> None:
             response = requests.get(sdf_url, allow_redirects=True)
             
             if response.status_code == 200:
-                filename: str = f"lig_{comp_id}_{chain}_{seq_id}_{cnt}.sdf"
+                filename: str = f"{pdbid}_lig_{comp_id}_{chain}_{seq_id}_{cnt}.sdf"
                 with open(filename, 'wb') as file:
                     file.write(response.content)
                 print(f"Downloaded: {filename}")
@@ -88,11 +94,12 @@ def download_ligands(pdbid: str, output_txt_path: str) -> None:
             cnt += 1
 
     # Write the SDF file names to a txt file
-    with Path.open(Path(output_txt_path), mode='w', encoding='utf-8') as f:
-        f.write('\n'.join(sdf_file_names))
+    if len(sdf_file_names) > 1:
+        with Path.open(Path(output_txt_path), mode='w', encoding='utf-8') as f:
+            f.write('\n'.join(sdf_file_names))
 
 if __name__ == '__main__':
     """ Reads the command line arguments and downloads SDF files for ligands of a given PDB entry ID.
     """
     args = parse_arguments()
-    download_ligands(args.pdbid, args.output_txt_path)
+    download_ligands(args.pdbid, args.smiles, args.output_txt_path)
