@@ -1,0 +1,687 @@
+steps:
+- id: extract_data_csv
+  in:
+    input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Public.csv
+    max_row: !ii 300 # Use 1 for CI
+    column_name: !ii "Smiles"
+    output_txt_path: !ii smiles.txt
+  out:
+  - output_data : !& smiles
+
+- id: generate_conformers_obabel
+  scatter: [smiles]
+  in:
+    smiles: !* smiles
+    output_sdf_path: !ii mol.sdf
+  out:
+  -  output_sdf_path: !& mol.sdf
+
+# - id: extract_pdbids_drugbank
+#   in:
+#     drugbank_xml_file_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/drugbank_5.1.10.xml
+#     output_txt_path: !ii pdbids_data.txt
+#     smiles: !* smiles
+#   out:
+#   - output_txt_path: !& pdbids_data.txt
+#   - output_smiles: !& drugbank_smiles
+#   - output_pdbids_2D: !& drugbank_pdbids
+
+# - id: filter_pdb_structures
+#   scatter: [input_pdbids]
+#   in: 
+#     input_pdbids: !* drugbank_pdbids
+#     oligomeric_states: !ii ["monomer"] # "homo 2-mer"]
+#     output_txt_path: !ii filtered_pdbs.txt
+#   out:
+#   - output_txt_path: !& filtered_pdbs.txt
+#   - output_pdbids: !& filtered_pdbids
+
+# - id: score_pdb_structures
+#   scatter: [input_pdbids]
+#   in: 
+#     input_pdbids: !* filtered_pdbids
+#     max_row: !ii 1 # for each compound we select one pdb structure
+#     output_txt_path: !ii scored_pdbs.txt
+#   out:
+#   - output_txt_path: !& scored_pdbs.txt
+#   - output_pdbids: !& scored_pdbids
+
+# - id: flatten_2D_to_1D
+#   in: 
+#     input_2D_array: !* scored_pdbids
+#   out:
+#   - output_1D_array: !& scored_pdbids_1D
+
+# - id: match_pdbids_smiles
+#   in: 
+#     filtered_pdbids: !* scored_pdbids_1D
+#     pdbids: !* drugbank_pdbids
+#     smiles: !* drugbank_smiles
+#   out:
+#   - filtered_smiles: !& scored_smiles_1D
+#   - output_filtered_pdbids: !& output_scored_pdbids_1D
+
+# - id: download_ligands_rcsb
+#   scatter: [pdbid, smiles]
+#   scatterMethod: dotproduct
+#   in: 
+#     smiles: !* scored_smiles_1D
+#     pdbid: !* output_scored_pdbids_1D
+#     output_txt_path: !ii ligands.txt
+#   out:
+#   - output_txt_path: !& ligands.txt
+#   - output_sdf_paths: !& ligands_sdf
+#   - output_smiles: !& output_smiles
+
+# - id: match_sdf_smiles
+#   scatter: [input_sdf_paths, smiles]
+#   scatterMethod: dotproduct
+#   in: 
+#     input_sdf_paths: !* ligands_sdf
+#     smiles: !* output_smiles
+#     output_txt_path: !ii selected_ligands.txt
+#   out:
+#   - output_txt_path: !& selected_ligands.txt
+#   - output_sdf_paths: !& matched_ligands_sdf
+
+# - id: select_single_ligands
+#   in: 
+#     input_sdf_paths: !* matched_ligands_sdf
+#   out:
+#   - sdf_cnts: !& lig_cnts
+#   - sdf_files: !& protease_sdfs
+#   - pdb_ids: !& pdbids
+  
+# - id: config_tag_pdb
+#   scatter: [pdb_id]
+#   in:
+#     pdb_id: !* pdbids
+#     filter: !ii False
+#   out:
+#   - output_config_string: !& pdb_id_str
+
+# - id: pdb
+#   scatter: [config]
+#   in:
+#     output_pdb_path: !ii rcsb_protein.pdb
+#     config: !* pdb_id_str
+#   out:
+#   - output_pdb_path: !& rcsb_protein.pdb
+
+# - id: pdb_fixer
+#   in:
+#     input_pdb_path: !* rcsb_protein.pdb
+#     input_helper_pdb_path: !* rcsb_protein.pdb # Note: PDBFixer utilizes sequence information from this file
+#     output_pdb_path: !ii pdbbind_pdbfixer.pdb
+#     add_atoms: !ii heavy
+#     add_residues: !ii True
+#     replace_nonstandard: !ii True
+#     keep_heterogens: !ii none
+#   scatter: [input_pdb_path, input_helper_pdb_path]
+#   scatterMethod: dotproduct
+#   out:
+#   - output_pdb_path: !& pdbbind_pdbfixer.pdb
+
+# - id: convert_mol2
+#   scatter: [input_path]
+#   in:
+#     input_path: !* protease_sdfs
+# - id: obmin
+#   scatter: [input_mol2_path]
+#   in:
+#       # Perform an initial minimization (only), i.e. do not search for conformers.
+#       script: !ii /obminimize.sh # NOTE: Initial / required
+#   out:
+#   - output_mol2_path: !& ligand_min.mol2
+
+# - id: convert_pdbqt
+#   scatter: [input_path]
+#   out:
+#   - output_pdb_path: !& mol_prod.pdbqt
+
+# - id: convert_mol2
+#   scatter: [input_path]
+#   in:
+#     input_path: !* pdbbind_pdbfixer.pdb
+
+# - id: convert_pdbqt
+#   scatter: [input_path]
+#   in:
+#     arg1: !ii -xr # Receptor needs to be rigid
+#   out:
+#   - output_pdb_path: !& receptor_prod.pdbqt
+
+# # rescore protein ligand complexes
+# - id: autodock_vina_rescore
+#   in:
+#     input_ligand_pdbqt_path: !* mol_prod.pdbqt
+#     input_receptor_pdbqt_path: !* receptor_prod.pdbqt
+#     score_only: !ii True
+#     #local_only: !ii True
+#   scatter: [input_ligand_pdbqt_path, input_receptor_pdbqt_path]
+#   scatterMethod: dotproduct
+#   out:
+#   - output_log_path: !& vina_rescore_pdbind.log
+#   - docking_score: !& rescoring_scores
+#   - output_ligand_pdbqt_path: !& ligand_rescore.pdbqt
+
+# # - id: duplicate
+# #   in:
+# #     input_pdbqt_singleton_path: !* pdbbind_pdbfixer.pdb
+# #     input_pdbqt_array_path: !* ligand_rescore.pdbqt
+# #   scatter: [input_pdbqt_singleton_path, input_pdbqt_array_path]
+# #   scatterMethod: dotproduct
+# #   out:
+# #   - output_pdbqt_path: !& receptor_dup_2D.pdb
+
+# # - id: autodock_vina_filter
+# #   in:
+# #     input_log_paths: !* vina_rescore_pdbind.log
+# #     input_txt_path: !ii ""
+# #     docking_score_cutoff: !ii -1.0
+# #     max_num_poses_per_ligand: !ii 2
+# #     max_num_poses_total: !ii 30 #25 # Use 1 for CI same as max_row
+# #     rescore: !ii True
+# #     input_ligand_pdbqt_path: !* ligand_rescore.pdbqt
+# #     input_receptor_pdbqt_path: !* receptor_dup_2D.pdb
+# #   out:
+# #   - output_ligand_pdbqt_path: !& ligand_filter.pdbqt
+# #   - output_receptor_pdbqt_path: !& receptor_filter.pdb
+# #   - docking_scores: !& docking_scores
+# #   - experimental_dGs: !& dGs
+# #   - pdb_ids: !& rscb_pdbids
+
+# - id: pdb_fixer
+#   scatter: [input_pdb_path]
+#   in:
+#     input_pdb_path: !* pdbbind_pdbfixer.pdb
+#     output_pdb_path: !ii protein_pdbfixer.pdb
+#     add_atoms: !ii heavy
+#     add_residues: !ii True
+#     keep_heterogens: !ii none
+#   out:
+#   - output_pdb_path: !& protein_pdbfixer.pdb
+# - id: fix_amides
+#   scatter: [input_pdb_path]
+#   in:
+#     input_pdb_path: !* protein_pdbfixer.pdb
+#     output_pdb_path: !ii protein_fix_amides.pdb
+#   out:
+#   - output_pdb_path: !& protein_fix_amides.pdb
+# - id: pdb4amber_run # NOTE: See comments below w.r.t. pdb2gmx
+#   scatter: [input_pdb_path]
+#   in:
+#     input_pdb_path: !* protein_fix_amides.pdb
+#     output_pdb_path: !ii receptor_pdb4amber.pdb
+#   out:
+#   - output_pdb_path: !& receptor_pdb4amber.pdb
+# - id: str_check_add_hydrogens
+#   scatter: [input_structure_path]
+#   in: # charges = True outputs in pdbqt format; mode = auto, list, ph (must use ph mode to set ph!)
+#     input_structure_path: !* receptor_pdb4amber.pdb
+#     config: !ii {"charges": False, "mode": "auto", "ph": 7.4, "list": "", "keep_canonical_resnames": False}
+#   out:
+#   - output_structure_path: !& receptor_hydrogens_terminal.pdb
+# - id: python3_pdb_to_pdb
+#   scatter: [input_pdb_path]
+#   in:
+#     script: !ii /remove_terminal_residue_name_prefixes.py  # NOTE: Initial / required
+#     input_pdb_path: !* receptor_hydrogens_terminal.pdb
+#   out:
+#     - output_pdb_path: !& receptor_hydrogens.pdb
+# - id: str_check_add_hydrogens
+#   scatter: [input_structure_path]
+#   in: # charges = True outputs in pdbqt format; mode = auto, list, ph (must use ph mode to set ph!)
+#     input_structure_path: !* receptor_pdb4amber.pdb
+#     config: !ii {"charges": True, "mode": "auto", "ph": 7.4, "list": "", "keep_canonical_resnames": False}
+#     # output_structure_path: !ii pdb.pdbqt
+#     output_structure_path: !ii pdb.pdbqt
+#   out:
+#   - output_structure_path: !& pdb.pdbqt
+# - id: convert_pdbqt
+#   scatter: [input_path]
+#   in:
+#     input_path: !* receptor_pdb4amber.pdb
+#     # NOTE: Use the following pdbqt format-specific write options (see `obabel -Hpdbqt`):
+#     # r  Output as a rigid molecule (i.e. no branches or torsion tree)
+#     # Receptors *can* be flexible in autodock, but it is more complicated
+#     # than for ligands, so for now make receptors rigid.
+#     arg1: !ii -xr
+#   out:
+#   - output_pdb_path: !& receptor_rigid.pdbqt
+
+# # Docking setup
+# - id: config_tag_box
+#   in:
+#     offset: !ii 20
+#   out:
+#   - output_config_string: !& config_tag_box
+# - id: box
+#   scatter: [input_pdb_path]
+#   in:
+#     input_pdb_path: !* receptor_pdb4amber.pdb # pdb, not pdbqt
+#     output_pdb_path: !ii box.pdb
+#     config: !* config_tag_box
+#     #config: !ii {"offset": "20"} # Default of 2 Angstroms can cause autodock to not find any solutions.
+#   out:
+#   - output_pdb_path: !& box.pdb
+
+# # Molecular Dynamics setup
+# #  - leap_gen_top:
+# - id: config_tag_pdb2gmx
+#   in:
+#     water_type: !ii spce
+#     forcefield: !ii amber99sb-ildn
+#     ignh: !ii True
+# # NOTE: Setting ignh to True removes all existing hydrogens, and adds new
+# # hydrogens based on residue templates. This can cause problems for titratable
+# # residues such as Cysteine, Histidine, etc. In other words, if your pdb file
+# # contains residues named CYS which are actually in the CYX protonation state,
+# # pdb2gmx will fail to add the extra hydrogen atom! This is a problem because
+# # if you try to do a good job and explicitly add hydrogens beforehand (using
+# # e.g. str_check_add_hydrogens, babel_add_hydrogens, reduce_add_hydrogens, etc)
+# # they may use different heuristics and correctly add the hydrogen atom. Thus,
+# # the number of atoms in the coordinate and topology files will not be the same!
+# # The solution is to call pdb4amber first, which will fix the residue names.
+#     merge: !ii False
+#   out:
+#   - output_config_string: !& config_tag_pdb2gmx
+# - id: pdb2gmx
+#   scatter: [input_pdb_path]
+#   in:
+#     input_pdb_path: !* receptor_hydrogens.pdb
+#     output_crd_path: !ii receptor.gro # See comment below!
+#     # Also note that using .g96 format does NOT sort the atoms (within each
+#     # residue) in the crd file, but atoms in the top file are always sorted.
+#     # Thus, grompp will warn you that the atom names do not match:
+#     # "Warning: atom name nnn in *.top and *.g96 does not match"
+#     config: !* config_tag_pdb2gmx
+#   out:
+#   - output_crd_path: !& receptor.gro # See comment above!
+#   - output_top_zip_path: !& receptor.zip
+# - id: convert_xyz
+#   scatter: [input_path]
+#   in:
+#     input_path: !* receptor.gro
+#     output_xyz_path: !ii receptor.xyz
+#   out:
+#   - output_xyz_path: !& receptor.xyz
+# - id: convert_mol2
+#   scatter: [input_path]
+#   in:
+#     input_path: !* mol_prod.pdbqt
+# #      input_path: !* ligand.pdbqt
+# #    out:
+# #    - output_mol2_path: !& pose.mol2
+# - id: python3_mol2_to_mol2
+#   scatter: [input_mol2_path]
+#   in:
+#     script: !ii /rename_residues_mol.py # NOTE: Initial / required
+# #      input_mol2_path: !* pose.mol2
+# #    out:
+# #    - output_mol2_path: !& pose_mol.mol2
+# # NOTE: minimize before calling acpype so 1. tleap complains less about close contacts:
+# # /usr/local/bin/teLeap: Warning!
+# # Close contact of 1.418311 angstroms between .R<UNL 1>.A<CG 8> and .R<UNL 1>.A<HD2 30>
+# # and 2. acpype doesn't complain about 'ERROR: Atoms TOO alone (> 3.0 Ang.)'
+# # (acpype suggests using --force, but it's better to just minimize.)
+# - id: acpype
+# # NOTE: We are using our own acpypye CWL adapter (NOT the biobb version) so
+# # we have the choice of using charges from the mol2 file.
+#   scatter: [input_path]
+#   in:
+# #      input_path: !* pose_mol.mol2 # Do NOT use pose_ligand.pdb
+#     charge_method: !ii user # take charges from mol2 file
+#   out:
+#   - output_itp_path: !& ligand_GMX.itp
+#     # NOTE: Although we don't need the *.itp topology file yet, we
+#     # need to use these coordinates with autodock because they are
+#     # sorted to agree with the *.itp topology include file.
+#     # Otherwise, we will get the grompp atom name warning (see below).
+#   - output_gro_path: !& ligand_GMX.gro
+# #    - output_top_path: !& ligand_GMX.top
+#   - output_pdb_path: !& ligand_GMX.pdb
+# # NOTE: acpype doesn't add forcefield or water topology #include lines.
+# - id: bash_top
+#   scatter: [input_top_path]
+#   in:
+#     script: !ii /gmx_add_topology_includes.sh # NOTE: Initial / required
+# #      input_top_path: !* ligand_GMX.top
+# #    out:
+# #    - output_top_path: !& ligand_GMX_includes.top
+# - id: zip_top
+#   scatter: [input_itp_path, input_top_path]
+#   scatterMethod: dotproduct
+#   in:
+# #      input_top_path: !* ligand_GMX_includes.top
+#     input_itp_path: !* ligand_GMX.itp
+# #    out:
+# #    - output_top_zip_path: !& ligand_GMX.zip
+# - id: convert_xyz
+#   scatter: [input_path]
+#   in:
+#     input_path: !* ligand_GMX.pdb # Need .pdb, otherwise: issues, such as 
+#     # the conversion of one atom type to another, can happen.
+#     # Because Openbabel doesn't work for gro files 
+#     # https://open-babel.readthedocs.io/en/latest/FileFormats/GRO_format.html#
+#     # For example if you use the gro format and have a BR (Bromine) atom "1  MOL   BR   53  -1.479  -3.282   2.052"
+#     # it will be converted to Boron (B) in the output xyz file "B        -14.79000      -32.82000       20.52000"
+#     output_xyz_path: !ii pose_ligand.xyz
+#   out:
+#   - output_xyz_path: !& pose_ligand.xyz
+# - id: append_ligand
+#   scatter: [input_itp_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+# #      input_itp_path: !* ligand_GMX.itp
+#     input_top_zip_path: !* receptor.zip # !*receptor.zip
+#   out:
+#   - output_top_zip_path: !& complex_vac.zip
+# - id: combine_structure
+#   in:
+#     input_structure1: !* receptor.xyz
+#     input_structure2: !* pose_ligand.xyz
+#   scatter: [input_structure1, input_structure2]
+#   scatterMethod: dotproduct
+#   out:
+#   - output_structure_path: !& complex_vac.pdb
+
+# - id: gmx_editconf
+#   scatter: [input_crd_path]
+#   in:
+#     input_crd_path: !* complex_vac.pdb
+#     #input_crd_path: !* complex_vac.pdb
+#     align_principal_axes: !ii 0
+#     box_type: !ii cubic
+#     distance_to_molecule: !ii 1.2
+# - id: solvate
+#   scatter: [input_solute_crd_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     input_top_zip_path: !* complex_vac.zip
+#     #input_top_zip_path: !* complex_vac.zip
+#   out:
+#   - output_crd_path: !& solvate.gro
+#   - output_top_zip_path: !& solvate.zip
+# - id: grompp
+#   scatter: [input_crd_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     input_crd_path: !* solvate.gro
+#     input_top_zip_path: !* solvate.zip
+#     config: !ii
+#       # "Warning: atom name nnn in *.top and *.gro does not match"
+#       maxwarn: 1 # Be careful that this doesn't hide other errors!
+#       mdp:
+#         integrator: steep
+# - id: genion
+#   scatter: [input_tpr_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     # pH 7.0 = 0.05 concentration, pH 3.6 = 1.50 concentration, pH 2.5 = 4.50 concentration
+#     # NOTE: At higher salt concentrations, you may need to increase nsteps of
+#     # steepest descent minimization from 200 to around 300.
+#     config: !ii
+#       neutral: True
+#       concentration: 0.05 # mol/liter
+#     output_crd_path: !ii genion.gro
+#   out:
+#   - output_top_zip_path: !& genion.zip
+#   - output_crd_path: !& genion.gro
+# - id: gmx_trjconv_str
+#   scatter: [input_top_path, input_crd_path]
+#   scatterMethod: dotproduct
+#   in:
+#     #config: !ii
+#     #  selection: System
+#     #input_top_path: !* prod.tpr
+#     # input_crd_path: !* genion.gro
+#     output_str_path: !ii genion.pdb
+# - id: grompp
+#   scatter: [input_crd_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     config: !ii
+#       mdp:
+#         integrator: steep
+#         rvdw: 1.4
+#         rcoulomb: 1.4
+#         #coulombtype: PME
+#         nsteps: 1000
+#         emstep: 0.0001
+#         emtol: 100
+#         nstxout: 100
+#         nstenergy: 1
+# - id: mdrun
+#   scatter: [input_tpr_path]
+#   in:
+#     nb_terms: !ii cpu  # NOTE: Workaround for a bug in gromacs 2022.2, fixed in 2022.3
+#     # https://manual.gromacs.org/current/release-notes/2022/2022.3.html#energy-minimization-would-not-converge-with-gpu-and-without-dd
+#     bonded_terms: !ii cpu # GPU implementation IS supported for md integrator, is NOT supported for sd integrator, etc.
+#     pme_terms: !ii cpu
+#     pme_fft_terms: !ii cpu
+#     update_terms: !ii cpu
+# - id: gmx_energy
+#   scatter: [input_energy_path]
+#   in:
+#     config: !ii
+#       terms: [Potential]
+#     output_xvg_path: !ii energy_min_steep.xvg
+# - id: grompp
+#   scatter: [input_crd_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     config: !ii
+#       mdp:
+#         integrator: cg
+#         define: -DFLEXIBLE # Defines a flexible water model if it exists in the system
+#         # https://manual.gromacs.org/current/reference-manual/algorithms/energy-minimization.html#conjugate-gradient
+#         rvdw: 1.4
+#         rcoulomb: 1.4
+#         #coulombtype: PME
+#         nsteps: 1000
+#         emstep: 0.01
+#         emtol: 10
+#         nstxout: 100
+#         nstenergy: 1
+# - id: mdrun
+#   scatter: [input_tpr_path]
+#   in:
+#     nb_terms: !ii cpu  # NOTE: Workaround for a bug in gromacs 2022.2, fixed in 2022.3
+#     # https://manual.gromacs.org/current/release-notes/2022/2022.3.html#energy-minimization-would-not-converge-with-gpu-and-without-dd
+#     bonded_terms: !ii cpu # GPU implementation IS supported for md integrator, is NOT supported for sd integrator, etc.
+#     pme_terms: !ii cpu
+#     pme_fft_terms: !ii cpu
+#     update_terms: !ii cpu
+# - id: gmx_energy
+#   scatter: [input_energy_path]
+#   in:
+#     config: !ii
+#       terms: [Potential]
+#     output_xvg_path: !ii energy_min_cg.xvg
+# - id: grompp
+#   scatter: [input_crd_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     config: !ii
+#       mdp:
+#         integrator: md  # Use md for performance so we can update coordinates on GPU. Use sd for proper statistical properties.
+#         rvdw: 1.0
+#         rcoulomb: 1.0
+#         coulombtype: PME
+#         nsteps: 10000
+#         dt: 0.002
+#         tc-grps: system
+#         ref-t: 298
+#         tau-t: 2
+#         constraints: h-bonds
+#         nstxout: 100
+#         nstenergy: 10
+#         pcoupl: C-rescale
+#         tau-p: 1
+#         ref-p: 1
+#         compressibility: 4.5e-5
+#         comm-mode: Linear
+#         comm-grps: system
+# - id: mdrun
+#   scatter: [input_tpr_path]
+#   in:
+#     output_edr_path: !ii npt.edr
+#     output_crd_path: !ii npt.gro  # Explicitly specify for rmsd
+#   out:
+#   - output_crd_path: !& npt.gro
+#   #- output_trr_path: !& npt.trr
+# - id: gmx_energy
+#   scatter: [input_energy_path]
+#   in:
+#     config: !ii
+#       terms: [Density]
+#     output_xvg_path: !ii density.xvg
+
+# - id: config_tag_mdp
+#   in:
+#     nsteps: !ii 10000
+#     dt: !ii 0.002
+#     ref-t: !ii 298.0
+#     ref-p: !ii 1.0
+#     config: !ii
+#       mdp:
+#         integrator: md  # Use md for performance so we can update coordinates on GPU. Use sd for proper statistical properties.
+#         rvdw: 1.0
+#         rcoulomb: 1.0
+#         coulombtype: PME
+#         tc-grps: system
+#         tau-t: 2
+#         constraints: h-bonds
+#         nstxout: 1000
+#         nstenergy: 1000
+#         pcoupl: Parrinello-Rahman
+#         tau-p: 1
+#         compressibility: 4.5e-5
+#         comm-mode: Linear
+#         comm-grps: system
+#   out:
+#   - output_config_string: !& config_tag_mdp_prod
+# - id: grompp
+#   scatter: [input_crd_path, input_top_zip_path]
+#   scatterMethod: dotproduct
+#   in:
+#     config: !* config_tag_mdp_prod
+#     input_top_zip_path: !* genion.zip  # Use the original topology file so
+# # we don't have to question whether the topology gets messed up after file format conversions.
+#   out:
+#   - output_tpr_path: !& prod.tpr
+# - id: mdrun
+#   scatter: [input_tpr_path]
+#   in:
+#     output_trr_path: !ii prod.trr # Explicitly specify for cwl_watcher
+#   out:
+#   - output_crd_path: !& prod.gro
+#   - output_trr_path: !& prod.trr
+#   - output_edr_path: !& prod.edr
+
+# - id: gmx_trjconv_str
+#   scatter: [input_top_path, input_crd_path]
+#   scatterMethod: dotproduct
+#   in:
+#     #config: !ii
+#     #  selection: System
+#     input_top_path: !* prod.tpr
+#     input_crd_path: !* prod.gro
+#   out:
+#   - output_str_path: !& prod.pdb
+# - id: python_script
+#   scatter: [input_pdb_path]
+#   in:
+#     script: !ii ../scripts/atomselect.py
+#     dockerPull: !ii jakefennick/atomselect
+#     selection_string: !ii protein # Extract the protein from the last timestep
+#     input_pdb_path: !* prod.pdb
+# # Assign partial charges (protein)
+# # NOTE: Although we only start off with one protein, the final coordinates
+# # after doing MD with different ligands will be different; hence scatter
+# - id: convert_mol2
+#   scatter: [input_path]
+# - id: convert_pdbqt
+#   scatter: [input_path]
+#   in:
+#     arg1: !ii -xr # Receptor needs to be rigid
+#   out:
+#   - output_pdb_path: !& protein_prod.pdbqt
+# - id: python_script
+#   scatter: [input_pdb_path]
+#   in:
+#     script: !ii ../scripts/atomselect.py
+#     dockerPull: !ii jakefennick/atomselect
+#     selection_string: !ii resname MOL # Extract the ligand from the last timestep
+#     input_pdb_path: !* prod.pdb
+#   # out:
+#   # - output_pdb_path: !& ligand_temp.pdbqt
+
+# # It utilizes a helper PDB file to overwrite the atom element
+# # types (last column) of the input PDB file 
+# # Input pdb file
+# # ATOM   4653  C26 MOL A 286      44.880  26.370  42.560  1.00  0.00           C
+# # ATOM   4654  BR  MOL A 286      48.190  27.540  40.260  1.00  0.00           B
+# # Input helepr pdb file
+# # ATOM     52  C26 MOL Z   1     -18.069 -34.542  22.368  1.00  0.00           C
+# # ATOM     53   BR MOL Z   1     -14.786 -32.819  20.524  1.00  0.00          BR
+# - id: fix_pdb_atom_column
+#   scatter: [input_structure_path, input_helper_structure_path]
+#   scatterMethod: dotproduct
+#   in:
+#     input_helper_structure_path: !* ligand_GMX.pdb
+# # Assign partial charges (ligand)
+# - id: convert_mol2
+#   scatter: [input_path]
+# - id: convert_pdbqt
+#   scatter: [input_path]
+#   out:
+#   - output_pdb_path: !& ligand_prod.pdbqt
+# - id: autodock_vina_rescore
+#   scatter: [input_ligand_pdbqt_path, input_receptor_pdbqt_path]
+#   scatterMethod: dotproduct
+#   in:
+#     input_ligand_pdbqt_path: !* ligand_prod.pdbqt
+#     input_receptor_pdbqt_path: !* protein_prod.pdbqt
+#     score_only: !ii True
+#     #local_only: !ii True
+#   out:
+#   - output_log_path: !& vina_rescore.log
+#   - docking_score: !& docking_rescores
+
+# # - id: save_plot_data
+# #   in:
+# #     original_pdbids: !* pdbids
+# #     pdbids: !* rscb_pdbids
+# #     xs: !* dGs
+# #     ys: !* docking_scores
+# #     ys2: !* docking_rescores
+# #     output_txt_path: !ii out.dat
+# #   out:
+# #   - output_txt_path: !& out.dat
+  
+# # wic:
+# #   graphviz:
+# #     label: Virtual Screening 
+# #   steps:
+# #     (45, mdrun):
+# #       wic:
+# #         namespace: gpu  # To run MD on GPU
+# #         graphviz:
+# #           label: 'Molecular\nDynamics'
+# #     (48, mdrun):
+# #       wic:
+# #         namespace: gpu  # To run MD on GPU
+# #         graphviz:
+# #           label: 'Molecular\nDynamics'
+# #     (51, mdrun):
+# #       wic:
+# #         namespace: gpu  # To run MD on GPU
+# #         graphviz:
+# #           label: 'Molecular\nDynamics'
+# #     (55, mdrun):
+# #       wic:
+# #         namespace: gpu  # To run MD on GPU
+# #         graphviz:
+# #           label: 'Molecular\nDynamics'

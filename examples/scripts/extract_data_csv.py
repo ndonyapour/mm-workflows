@@ -52,7 +52,9 @@ def load_data(input_csv_path: str, query: str, column_name: str, output_txt_path
 
     # Now restrict to the column we want
     with Path.open(Path(output_txt_path), mode='w', encoding='utf-8') as f:
-        f.write('\n'.join(df[column_name].dropna().to_list()))
+        for sm in df[column_name].dropna().to_list():
+            # repr() preserves backslashes and strip quotes
+            f.write(f'{repr(sm)[1:-1]}\n')
 
 
 def main() -> None:

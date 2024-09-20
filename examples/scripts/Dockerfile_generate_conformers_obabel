@@ -1,0 +1,7 @@
+FROM condaforge/mambaforge
+# NOT mambaforge-pypy3 (openbabel is incompatible with pypy)
+
+RUN mamba install -c conda-forge openbabel
+
+ADD generate_conformers_obabel.py .
+ADD Dockerfile_generate_conformers_obabel .
