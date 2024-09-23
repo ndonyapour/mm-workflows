@@ -110,13 +110,25 @@ outputs:
     outputBinding:
       glob: stderr
       loadContents: true
+      # outputEval: |
+      #   ${
+      #     // the time command outputs to stderr and not to stdout
+      #     // example output below, parse the float value of seconds (first item in line)
+      #     // 1it [00:41, 41.03s/it]
+      #     // 78.909
+      #     return self[0].contents.split("\n").map(str => parseFloat(str)).reverse().find(num => !isNaN(num));
+      #   }
       outputEval: |
         ${
-          // the time command outputs to stderr and not to stdout
-          // example output below, parse the float value of seconds (first item in line)
-          // 1it [00:41, 41.03s/it]
-          // 78.909
-          return self[0].contents.split("\n").map(str => parseFloat(str)).reverse().find(num => !isNaN(num));
+        // the time command outputs to stderr and not to stdout
+        // example output below, parse the float value of seconds (first item in line)
+        // 1it [00:41, 41.03s/it]
+        // 78.909
+          return self[0].contents.split("\n").map(function(str) {
+            return parseFloat(str);
+            }).reverse().find(function(num) {
+          return !isNaN(num);
+          });
         }
 
 stderr: stderr

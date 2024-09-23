@@ -55,7 +55,7 @@ outputs:
         ${
           // file looks like
           // file_index
-          const lines = self[0].contents.split("\n").filter(line => line.trim() !== '');
+          var lines = self[0].contents.split("\n").filter(function(line) {return line.trim() !== '';});
           const lst = [];
           for (var i = 0; i < lines.length; i++) {
             var splitLine = lines[i].split(" ");
