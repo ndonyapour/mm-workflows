@@ -1,18 +1,20 @@
 steps:
 - id: extract_data_csv
   in:
-    input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Public.csv
-    max_row: !ii 1 # Use 1 for CI
+    input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Cleaned.csv
+    max_row: !ii 5 # Use 1 for CI
     column_name: !ii "Smiles"
     output_txt_path: !ii smiles.txt
   out:
-  - output_data : !& smiles
+  - output_data: !& smiles
 
 - id: generate_conformers_obabel
   scatter: [smiles]
   in:
     smiles: !* smiles
     output_sdf_path: !ii mol.sdf
+    num_conformers: !ii 5 # generates 5 conformers for each smiles and selects the best one
+    num_steps : !ii 100
   out:
   -  output_sdf_path: !& mol.sdf
 
@@ -39,14 +41,14 @@ steps:
   out:
   - output_pdb_path: !& protein_fix_amides.pdb
 
-- id: diffdock
+- id: diffdock # Runs the DiffDock model that does not use hydrogen atoms
   scatter: [ligand_path]
   scatterMethod: dotproduct
   in:
     protein_path: !* protein_fix_amides.pdb
     ligand_path: !* mol.sdf
-    samples_per_complex: !ii 20 # figure 3 left in DiffDock paper
-    inference_steps: !ii 20 # figure S11 in DiffDock paper
+    samples_per_complex: !ii 10
+    inference_steps: !ii 10 
   out:
   - output_files: !& diffdock_poses
 
@@ -65,7 +67,6 @@ steps:
   in:
     predicted_poses: !* output_poses
     centroid_cutoff: !ii 5 # if centroid of all poses are within cutoff then only keep most confident pose, requires visual inspection
-    #filtered_poses: !ii filtered_pose.sdf
   out:
   - filtered_poses: !& filtered_poses_2D
 
@@ -76,8 +77,8 @@ steps:
   - output_sdf_files: !& filtered_poses_1D
 
 - id: convert_pdb
-  scatter: [input_path, input_path]
-  scatterMethod: dotproduct
+  scatter: [input_path]
+  #scatterMethod: dotproduct
   in:
     input_path: !* filtered_poses_1D
     output_pdb_path: !ii ligand_pose.pdb
@@ -93,3 +94,18 @@ steps:
     output_structure_path: !ii complex_pdb.pdb
   out:
   - output_structure_path: !& complex_pdb.pdb
+
+- id: extract_smiles_sdf
+  scatter: [sdf_file_path]
+  in:
+    sdf_file_path: !* filtered_poses_1D
+  out:
+  - output_smiles: !& docked_sdf_smiles
+
+- id: success_inspector
+  in:
+    input_smiles: !* smiles
+    output_smiles: !* docked_sdf_smiles
+    output_txt_path: !ii results.txt
+  out:
+  - output_txt_path: !& results.txt

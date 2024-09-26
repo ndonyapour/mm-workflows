@@ -26,43 +26,20 @@ inputs:
     format: edam:format_3814 #sdf
 
 outputs:
-  # sdf_cnts:
-  #   label: Number of structures that have one ligand
-  #   doc: |-
-  #      Number of structures that have one ligand
-  #   type: int
-  #   outputBinding:
-  #     outputEval: |
-  #       ${
-  #         var sdf_cnts = 0;
-  #         if (inputs.input_sdf_paths == null){
-  #           return null;
-  #         }
-  #         for (var i = 0; i < inputs.input_sdf_paths.length; i++) {
-  #           var sdfs = inputs.input_sdf_paths[i];
-  #           if (sdfs != null) {
-  #             if (sdfs.length == 1){
-  #               sdf_cnts = sdf_cnts + 1;
-  #             }
-  #           }
-  #         }
-  #       return sdf_cnts; //.toString();
-  #       }
-
   output_sdf_files:
-    label: Number of structures that have one ligand
+    label: 1D array of input SDF files
     doc: |-
-       Number of structures that have one ligand
-    type: {"type": "array", "items": "File"}
+       1D array of input SDF files
+    type: File[] #{"type": "array", "items": "File"}
     outputBinding:
       outputEval: |
         ${
-          if (inputs.input_sdf_paths == null){
+          if (inputs.input_sdf_files == null){
             return [];
           }
           var output_sdfs = [];
-          for (var i = 0; i < inputs.input_sdf_paths.length; i++) {
-            var sdfs = inputs.input_sdf_paths[i];
+          for (var i = 0; i < inputs.input_sdf_files.length; i++) {
+            var sdfs = inputs.input_sdf_files[i];
             if (sdfs != null) {
               for (var j = 0; j < sdfs.length; j++) {
                   output_sdfs.push(sdfs[j]);

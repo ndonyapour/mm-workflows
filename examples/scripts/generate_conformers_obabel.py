@@ -36,12 +36,13 @@ def validate_smiles(smiles: str) -> Optional[pybel.Molecule]:
         print(f"Invalid SMILES: {e}")
         return None
 
-def generate_conformers(molecule: pybel.Molecule, num_conformers: int=10, forcefield: str="GAFF", steps: int=1000):
+def generate_conformers(molecule: pybel.Molecule, smiles: str, num_conformers: int=10, forcefield: str="GAFF", steps: int=1000):
     """
     Generates conformers for a molecule, optimizes them, and returns the molecule with generated conformers.
 
     Args:
         molecule (pybel.Molecule): The molecule object to generate conformers for.
+        smiles (str): The SMILES string.
         num_conformers (int): The number of conformers to generate.
         forcefield (str): The forcefield to use for minimization.
         steps (int): The number of minimization steps.
@@ -53,6 +54,8 @@ def generate_conformers(molecule: pybel.Molecule, num_conformers: int=10, forcef
     ff = openbabel.OBForceField.FindForceField(forcefield)
     molecule.OBMol.AddHydrogens()
     molecule.make3D(forcefield=forcefield)
+    # Add the SMILES as a property
+    molecule.data["SMILES"] = smiles
     if not ff.Setup(obmol):
         print("Forcefield setup failed.")
         return None
@@ -91,7 +94,7 @@ def main() -> None:
     
     if molecule is not None:
         # Generate conformers
-        conformer_molecule = generate_conformers(molecule, args.num_conformers, args.forcefield, args.num_steps)
+        conformer_molecule = generate_conformers(molecule, args.smiles, args.num_conformers, args.forcefield, args.num_steps)
         
         if conformer_molecule:
             save_molecule_as_sdf(conformer_molecule, args.output_sdf_path)
