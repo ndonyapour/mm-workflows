@@ -2,7 +2,7 @@ steps:
 - id: extract_data_csv
   in:
     input_csv_path: !ii /polus2/donyapourn2/projects/drugbank/databases/compound_libaries/ProteaseInhibitorCompounds_Cleaned.csv
-    max_row: !ii 5 # Use 1 for CI
+    max_row: !ii 2 # Use 1 for CI
     column_name: !ii "Smiles"
     output_txt_path: !ii smiles.txt
   out:
@@ -12,6 +12,7 @@ steps:
   scatter: [smiles]
   in:
     smiles: !* smiles
+    # smiles: !ii ["C1=CC2=CC=C3C=CC=NC3=C2N=C1","CC(=O)NCCC1=C[NH]C2=C1C=C(O)C=C2"] #CC(=O)NCCC1=C[NH]C2=C1C=C(O)C=C2
     output_sdf_path: !ii mol.sdf
     num_conformers: !ii 5 # generates 5 conformers for each smiles and selects the best one
     num_steps : !ii 100
@@ -109,3 +110,12 @@ steps:
     output_txt_path: !ii results.txt
   out:
   - output_txt_path: !& results.txt
+
+- id: visualize_protein_ligands
+  scatter: [sdf_file_paths]
+  in:
+    pdb_file_path: !* protein_fix_amides.pdb
+    sdf_file_paths: !* filtered_poses_2D
+    output_html_path: !ii vis_poses.html
+  out:
+  - output_html_path: !& vis_poses.html

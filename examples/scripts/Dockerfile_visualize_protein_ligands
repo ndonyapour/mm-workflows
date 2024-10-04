@@ -1,0 +1,6 @@
+FROM condaforge/miniforge3
+
+RUN mamba install -c conda-forge notebook nodejs ambertools nglview ipywidgets=7.7.0 -y
+
+ADD visualize_protein_ligands.py .
+ADD Dockerfile_visualize_protein_ligands .
