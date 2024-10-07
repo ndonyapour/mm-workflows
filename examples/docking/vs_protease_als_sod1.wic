@@ -12,7 +12,6 @@ steps:
   scatter: [smiles]
   in:
     smiles: !* smiles
-    # smiles: !ii ["C1=CC2=CC=C3C=CC=NC3=C2N=C1","CC(=O)NCCC1=C[NH]C2=C1C=C(O)C=C2"] #CC(=O)NCCC1=C[NH]C2=C1C=C(O)C=C2
     output_sdf_path: !ii mol.sdf
     num_conformers: !ii 5 # generates 5 conformers for each smiles and selects the best one
     num_steps : !ii 100
@@ -119,3 +118,65 @@ steps:
     output_html_path: !ii vis_poses.html
   out:
   - output_html_path: !& vis_poses.html
+
+wic:
+  graphviz:
+    label: Virtual Screening 
+  steps:
+    (1, extract_data_csv):
+      wic:
+        graphviz:
+          label: Extract Protease Compounds' SMILES
+    (2, generate_conformers_obabel):
+      wic:
+        graphviz:
+          label: Generate Conformers from SMILES
+    (3, download_pdb):
+      wic:
+        graphviz:
+          label: Download Protein PDB 
+    (4, pdb_fixer):
+      wic:
+        graphviz:
+          label: Fix Protein PDB Structure
+    (5, fix_amides):
+      wic:
+        graphviz:
+          label: Fix Protein Amides
+    (6, diffdock):
+      wic:
+        namespace: gpu
+        graphviz:
+          label: Run DiffDock for Ligand-Protein Docking
+    (7, rank_diffdock_poses):
+      wic:
+        graphviz:
+          label: Rank Docking Poses
+    (8, pose_cluster_filter):
+      wic:
+        graphviz:
+          label: Filter Poses via Clustering
+    (9, flatten_2D_sdf):
+      wic:
+        graphviz:
+          label: Flatten Poses to 1D SDF
+    (10, convert_pdb):
+      wic:
+        graphviz:
+          label: Convert SDF to PDB Format
+    (11, combine_pdb):
+      wic:
+        graphviz:
+          label: Combine Protein and Ligand PDB
+    (12, extract_smiles_sdf):
+      wic:
+        graphviz:
+          label: Extract SMILES from SDF
+    (13, success_inspector):
+      wic:
+        graphviz:
+          label: Generate Docking Results
+    (14, visualize_protein_ligands):
+      wic:
+        graphviz:
+          label: Visualize Protein-Ligand Complexes in HTML
