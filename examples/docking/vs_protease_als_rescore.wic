@@ -20,10 +20,9 @@ steps:
 
 - id: download_pdb.wic
   in:
-    pdb_id: !ii 2C9V # SOD1
+    pdb_id: !ii 4FDD  # SOD1: 2C9V  # FUS: 4FDD 
 
 - id: pdb_fixer
-  #scatter: [input_pdb_path]
   in:
     input_pdb_path: !* protein.pdb
     output_pdb_path: !ii protein_pdbfixer.pdb
@@ -34,7 +33,6 @@ steps:
   - output_pdb_path: !& protein_pdbfixer.pdb
 
 - id: fix_amides
-  #scatter: [input_pdb_path]
   in:
     input_pdb_path: !* protein_pdbfixer.pdb
     output_pdb_path: !ii protein_fix_amides.pdb
@@ -76,18 +74,59 @@ steps:
   out:
   - output_sdf_files: !& filtered_poses_1D
 
+# assign partial charges (ligand)
+- id: convert_pdbqt.wic
+  scatter: [input_sdf_path]
+  in:
+    # NOTE: input_pdb_path and input_sdf_path are currently only necessary
+    # due to a limitation of the inlineing implementation.
+    input_pdb_path: !* protein_fix_amides.pdb
+    input_sdf_path: !* filtered_poses_1D
+
+# rescore protein ligand complexes
+- id: autodock_vina_rescore
+  scatter: [input_ligand_pdbqt_path, input_receptor_pdbqt_path]
+  scatterMethod: dotproduct
+  in:
+    input_ligand_pdbqt_path: !* mol_prod.pdbqt
+    input_receptor_pdbqt_path: !* receptor_prod.pdbqt
+    score_only: !ii True
+  out:
+  - output_log_path: !& vina_rescore_pdbind.log
+  - docking_score: !& rescoring_scores
+  - output_ligand_pdbqt_path: !& ligand_rescore.pdbqt
+
+- id: duplicate
+  in:
+    input_pdbqt_singleton_path: !* protein_fix_amides.pdb
+    input_pdbqt_array_path: !* ligand_rescore.pdbqt
+  scatter: [input_pdbqt_array_path]
+  out:
+  - output_pdbqt_path: !& receptor_dup_2D.pdb
+
+- id: autodock_vina_filter
+  in:
+    input_log_paths: !* vina_rescore_pdbind.log
+    docking_score_cutoff: !ii 100 # set to a big number to get all the generated poses
+    max_num_poses_per_ligand: !ii 1
+    rescore: !ii True
+    input_ligand_pdbqt_path: !* ligand_rescore.pdbqt
+    input_receptor_pdbqt_path: !* receptor_dup_2D.pdb
+  out:
+  - output_ligand_pdbqt_path: !& ligand_filter.pdbqt
+  - output_receptor_pdbqt_path: !& receptor_filter.pdb
+  - docking_scores: !& docking_scores
+
 - id: convert_pdb
   scatter: [input_path]
-  #scatterMethod: dotproduct
   in:
-    input_path: !* filtered_poses_1D
+    input_path: !* ligand_filter.pdbqt
     output_pdb_path: !ii ligand_pose.pdb
   out:
   - output_pdb_path: !& ligand_pose.pdb
 
 - id: combine_pdb
-  scatter: [input_structure2] #input_structure2]
-  #scatterMethod: dotproduct
+  scatter: [input_structure2]
   in:
     input_structure1: !* protein_fix_amides.pdb
     input_structure2: !* ligand_pose.pdb
@@ -131,10 +170,10 @@ wic:
       wic:
         graphviz:
           label: Generate Conformers from SMILES
-    (3, download_pdb):
+    (3, download_pdb.wic):
       wic:
         graphviz:
-          label: Download Protein PDB 
+          label: Setup PDB
     (4, pdb_fixer):
       wic:
         graphviz:
@@ -160,23 +199,37 @@ wic:
       wic:
         graphviz:
           label: Flatten Poses to 1D SDF
-    (10, convert_pdb):
+    (10, convert_pdbqt.wic):
+      wic:
+        inlineable: False
+    (11, autodock_vina_rescore.wic):
+      wic:
+        inlineable: False
+    (12, duplicate):
+      wic:
+        graphviz:
+          label: Duplicate Receptor PDB
+    (13, autodock_vina_filter):
+      wic:
+        graphviz:
+          label: Apply Docking\nScore Cutoff
+    (14, convert_pdb):
       wic:
         graphviz:
           label: Convert SDF to PDB Format
-    (11, combine_pdb):
+    (15, combine_pdb):
       wic:
         graphviz:
           label: Combine Protein and Ligand PDB
-    (12, extract_smiles_sdf):
+    (16, extract_smiles_sdf):
       wic:
         graphviz:
           label: Extract SMILES from SDF
-    (13, success_inspector):
+    (17, success_inspector):
       wic:
         graphviz:
           label: Generate Docking Results
-    (14, visualize_protein_ligands):
+    (18, visualize_protein_ligands):
       wic:
         graphviz:
           label: Visualize Protein-Ligand Complexes in HTML
