@@ -21,6 +21,8 @@ hints:
 
 requirements:
   InlineJavascriptRequirement: {}
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
 inputs:
 
   protein_path:

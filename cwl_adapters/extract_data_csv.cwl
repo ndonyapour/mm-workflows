@@ -106,30 +106,30 @@ outputs:
       glob: $(inputs.output_txt_path)
     format: edam:format_2330
 
-  output_data:
-    label: The output data
-    doc: |-
-      The output data
-    type: 
-      type: array
-      items: string
-    outputBinding:
-      glob: $(inputs.output_txt_path)
-      loadContents: true
-      outputEval: |
-        ${
-            var lines = self[0].contents.split("\n");
-            // remove black lines
-            lines = lines.filter(function(line) {return line.trim() !== '';});
-            var data = [];
-            for (var i = 0; i < lines.length; i++) {
-              // The format of the lines is as follows: data 
-                var words = lines[i].split(",").map(function(item) {return item.trim();});
-                data.push(words[0]);
+  # output_data:
+  #   label: The output data
+  #   doc: |-
+  #     The output data
+  #   type: 
+  #     type: array
+  #     items: string
+  #   outputBinding:
+  #     glob: $(inputs.output_txt_path)
+  #     loadContents: true
+  #     outputEval: |
+  #       ${
+  #           var lines = self[0].contents.split("\n");
+  #           // remove black lines
+  #           lines = lines.filter(function(line) {return line.trim() !== '';});
+  #           var data = [];
+  #           for (var i = 0; i < lines.length; i++) {
+  #             // The format of the lines is as follows: data 
+  #               var words = lines[i].split(",").map(function(item) {return item.trim();});
+  #               data.push(words[0]);
 
-              }
-            return data;
-        }
+  #             }
+  #           return data;
+  #       }
   #  format: edam:format_2330
 
 
