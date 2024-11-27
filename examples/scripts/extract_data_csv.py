@@ -43,6 +43,9 @@ def load_data(input_csv_path: str, query: str, column_name: str, output_txt_path
         df = df.query(query)
         print(df)
 
+    # Remove rows with null value in thecolumn
+    df.dropna(subset=[column_name], inplace=True)
+    
     # Perform row slicing (if any)
     if int(min_row) != 1 or int(max_row) != -1:
         # We want to convert to zero-based indices and we also want
@@ -52,7 +55,7 @@ def load_data(input_csv_path: str, query: str, column_name: str, output_txt_path
 
     # Now restrict to the column we want
     with Path.open(Path(output_txt_path), mode='w', encoding='utf-8') as f:
-        for sm in df[column_name].dropna().to_list():
+        for sm in df[column_name].to_list():
             # repr() preserves backslashes and strip quotes
             f.write(f'{repr(sm)[1:-1]}\n')
 

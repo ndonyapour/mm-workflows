@@ -26,7 +26,7 @@ requirements:
         for (var i = 0; i < inputs.input_smiles.length; i++) {
             var smiles = inputs.input_smiles[i];
             if (unique_output_smiles.includes(smiles)){
-              dat_file_contents += smiles + "\tSuccess" + "\n";
+              dat_file_contents += smiles + "\tSuccess" + inputs.dG_values[success_counts] + "\n";
               success_counts++;
             }
             else{
@@ -64,6 +64,16 @@ inputs:
       File type: input
       Accepted formats:string
     type: string[]
+    format: edam:format_2330
+
+  dG_values:
+    label: The Binding Free Energy Values
+    doc: |-
+      The output SMILES
+      Type: float[]
+      File type: input
+      Accepted formats:string
+    type: float[]
     format: edam:format_2330
 
   output_txt_path:
