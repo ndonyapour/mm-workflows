@@ -26,7 +26,7 @@ requirements:
         for (var i = 0; i < inputs.input_smiles.length; i++) {
             var smiles = inputs.input_smiles[i];
             if (unique_output_smiles.includes(smiles)){
-              dat_file_contents += smiles + "\tSuccess" + inputs.dG_values[success_counts] + "\n";
+              dat_file_contents += smiles + "\tSuccess" + "\t" + inputs.dG_values[success_counts] + "\n";
               success_counts++;
             }
             else{

@@ -2,7 +2,7 @@ steps:
 - id: extract_data_csv
   in:
     input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned.csv
-    max_row: !ii 20 # Use 1 for CI
+    max_row: !ii 1 # Use 1 for CI
     column_name: !ii "smilesIso"
     output_txt_path: !ii smiles.txt
   out:
@@ -60,9 +60,9 @@ steps:
 - id: rank_diffdock_poses
   scatter: [diffdock_poses]
   in:
-    top_n_confident: !ii 1000 # if only using top_percent_confidence, then set top_n_confident to trivially high number
+    top_n_confident: !ii 1 # if only using top_percent_confidence, then set top_n_confident to trivially high number
     # if only want to use top_n_confident, then set top_percent_confidence to 100
-    top_percent_confidence: !ii 33 # take top third of most confident poses, see figure 3 right in DiffDock paper
+    top_percent_confidence: !ii 100 # take top third of most confident poses, see figure 3 right in DiffDock paper
     diffdock_poses: !* diffdock_poses
   out:
   - output_poses: !& output_poses
@@ -129,8 +129,7 @@ steps:
   in:
     input_score_file: !* predicted_pKa.csv
   out:
-  - dG_values: !& onionnet_score2
-
+  - dG_values: !& onionnet_score
 
 - id: extract_smiles_sdf
   scatter: [sdf_file_path]
@@ -143,91 +142,99 @@ steps:
   in:
     input_smiles: !* smiles
     output_smiles: !* docked_sdf_smiles
+    dG_values: !* onionnet_score
     output_txt_path: !ii results.txt
   out:
   - output_txt_path: !& results.txt
 
-# - id: visualize_protein_ligands
-#   scatter: [sdf_file_paths]
-#   in:
-#     pdb_file_path: !* protein_fix_amides.pdb
-#     sdf_file_paths: !* filtered_poses_2D
-#     output_html_path: !ii vis_poses.html
-#   out:
-#   - output_html_path: !& vis_poses.html
+- id: visualize_protein_ligands
+  scatter: [sdf_file_paths]
+  in:
+    pdb_file_path: !* protein_fix_amides.pdb
+    sdf_file_paths: !* filtered_poses_2D
+    output_html_path: !ii vis_poses.html
+  out:
+  - output_html_path: !& vis_poses.html
 
-# wic:
-#   graphviz:
-#     label: Virtual Screening 
-#   steps:
-#     (1, extract_data_csv):
-#       wic:
-#         graphviz:
-#           label: Extract Protease Compounds' SMILES
-#     (2, generate_conformers_obabel):
-#       wic:
-#         graphviz:
-#           label: Generate Conformers from SMILES
-#     (3, download_pdb.wic):
-#       wic:
-#         graphviz:
-#           label: Setup PDB
-#     (4, pdb_fixer):
-#       wic:
-#         graphviz:
-#           label: Fix Protein PDB Structure
-#     (5, fix_amides):
-#       wic:
-#         graphviz:
-#           label: Fix Protein Amides
-#     (6, diffdock):
-#       wic:
-#         namespace: gpu
-#         graphviz:
-#           label: Run DiffDock for Ligand-Protein Docking
-#     (7, rank_diffdock_poses):
-#       wic:
-#         graphviz:
-#           label: Rank Docking Poses
-#     (8, pose_cluster_filter):
-#       wic:
-#         graphviz:
-#           label: Filter Poses via Clustering
-#     (9, flatten_2D_sdf):
-#       wic:
-#         graphviz:
-#           label: Flatten Poses to 1D SDF
-#     (10, convert_pdbqt.wic):
-#       wic:
-#         inlineable: False
-#     (11, autodock_vina_rescore.wic):
-#       wic:
-#         inlineable: False
-#     (12, duplicate):
-#       wic:
-#         graphviz:
-#           label: Duplicate Receptor PDB
-#     (13, autodock_vina_filter):
-#       wic:
-#         graphviz:
-#           label: Apply Docking\nScore Cutoff
-#     (14, convert_pdb):
-#       wic:
-#         graphviz:
-#           label: Convert SDF to PDB Format
-#     (15, combine_pdb):
-#       wic:
-#         graphviz:
-#           label: Combine Protein and Ligand PDB
-#     (16, extract_smiles_sdf):
-#       wic:
-#         graphviz:
-#           label: Extract SMILES from SDF
-#     (17, success_inspector):
-#       wic:
-#         graphviz:
-#           label: Generate Docking Results
-#     (18, visualize_protein_ligands):
-#       wic:
-#         graphviz:
-#           label: Visualize Protein-Ligand Complexes in HTML
+wic:
+  graphviz:
+    label: Virtual Screening Workflow
+  steps:
+    (1, extract_data_csv):
+      wic:
+        graphviz:
+          label: Extract Protease Compounds' SMILES
+    (2, load_data):
+      wic:
+        graphviz:
+          label: Load Extracted SMILES
+    (3, generate_conformers_obabel):
+      wic:
+        graphviz:
+          label: Generate Conformers from SMILES
+    (4, download_pdb.wic):
+      wic:
+        graphviz:
+          label: Download PDB File
+    (5, pdb_fixer):
+      wic:
+        graphviz:
+          label: Fix Protein PDB Structure
+    (6, fix_amides):
+      wic:
+        graphviz:
+          label: Fix Protein Amides
+    (7, diffdock):
+      wic:
+        namespace: gpu
+        graphviz:
+          label: Run DiffDock for Ligand-Protein Docking
+    (8, rank_diffdock_poses):
+      wic:
+        graphviz:
+          label: Rank Docking Poses
+    (9, pose_cluster_filter):
+      wic:
+        graphviz:
+          label: Filter Poses via Clustering
+    (10, flatten_2D_sdf):
+      wic:
+        graphviz:
+          label: Flatten Poses to 1D SDF
+    (11, convert_pdb):
+      wic:
+        graphviz:
+          label: Convert SDF to PDB Format
+    (12, rename_residues_pdb):
+      wic:
+        graphviz:
+          label: Rename Ligand Residues
+    (13, combine_pdb):
+      wic:
+        graphviz:
+          label: Combine Protein and Ligand PDB
+    (14, onionnet_featurize):
+      wic:
+        graphviz:
+          label: Featurize Complex with OnionNet
+    (15, onionnet_score):
+      wic:
+        graphviz:
+          label: Predict OnionNet Scores
+    (16, load_onionnet_score):
+      wic:
+        graphviz:
+          label: Load OnionNet Scores
+    (17, extract_smiles_sdf):
+      wic:
+        graphviz:
+          label: Extract SMILES from Docked SDF
+    (18, success_inspector):
+      wic:
+        graphviz:
+          label: Inspect Docking Results
+    (19, visualize_protein_ligands):
+      wic:
+        graphviz:
+          label: Visualize Protein-Ligand Complexes
+
