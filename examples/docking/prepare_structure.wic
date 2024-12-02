@@ -1,0 +1,28 @@
+steps:
+- id: pdb
+  in:
+    config: !ii
+      pdb_code: 1aki
+    output_pdb_path: !ii structure.pdb
+  out:
+  - output_pdb_path: !& structure.pdb
+
+- id: extract_protein
+  in:
+    input_pdb_path: !* structure.pdb
+    output_pdb_path: !ii protein.pdb
+  out:
+  - output_pdb_path: !& protein.pdb
+
+- id: pdb_fixer
+  in:
+    input_pdb_path: !* protein.pdb
+    input_helper_pdb_path: !* protein.pdb # Note: PDBFixer utilizes sequence information from this file
+    output_pdb_path: !ii protein.pdb
+    add_atoms: !ii heavy
+    add_residues: !ii True
+    replace_nonstandard: !ii True
+    keep_heterogens: !ii none
+    output_pdb_path: !ii protein.pdb
+  out:
+  - output_pdb_path: !& protein_pdbfixer.pdb
