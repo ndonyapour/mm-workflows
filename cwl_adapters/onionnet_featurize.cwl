@@ -21,7 +21,9 @@ requirements:
       ${
         var dat_file_contents = "";
         for (var i = 0; i < inputs.pdb_paths.length; i++) {
-          dat_file_contents += inputs.pdb_paths[i].path + "\n";
+          if (inputs.pdb_paths[i] != null) {
+            dat_file_contents += inputs.pdb_paths[i].path + "\n";
+          }
         }
         // Note: Uses https://www.commonwl.org/v1.0/CommandLineTool.html#Dirent
         // and https://www.commonwl.org/user_guide/topics/creating-files-at-runtime.html
@@ -33,7 +35,7 @@ requirements:
 inputs:
   pdb_paths:
     label: The path of input pdb files
-    type: File[]
+    type: ["null", {"type": "array", "items": ["null", "File"]}] #File[]
     format: 
     - edam:format_1476 # PDB
 

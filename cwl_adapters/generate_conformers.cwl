@@ -16,6 +16,8 @@ hints:
 
 requirements:
   InlineJavascriptRequirement: {}
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
 
 inputs:
   input_excel_path:
