@@ -1,12 +1,11 @@
 steps:
 - id: extract_data_csv
   in:
-    input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned.csv
-    max_row: !ii 1 # Use 1 for CI
+    input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned_chunk1.csv
+    max_row: !ii 102 # Use 1 for CI
     column_name: !ii "smilesIso"
     output_txt_path: !ii smiles.txt
   out:
-  #- output_data: !& smiles
   - output_txt_path: !& smiles.txt
 
 - id: load_data
@@ -27,7 +26,7 @@ steps:
 
 - id: download_pdb.wic
   in:
-    pdb_id: !ii 3CQP  # SOD1: 2C9V  # FUS: 4FDD 
+    pdb_id: !ii 3CQP # 3CQP Human SOD1 G85R Variant  # SOD1: 2C9V  # FUS: 4FDD 
 
 - id: pdb_fixer
   in:
@@ -109,14 +108,23 @@ steps:
   out:
   - output_structure_path: !& complex_pdb.pdb
 
-- id: onionnet_featurize
+- id: divide_chunks
   in:
-    pdb_paths: !* complex_pdb.pdb
+    input_pdb_paths: !* complex_pdb.pdb
+    chunk_size: !ii 100
+  out:
+  - output_pdb_paths: !& complex_structure.pdb
+
+- id: onionnet_featurize
+  scatter: [pdb_paths]
+  in:
+    pdb_paths: !* complex_structure.pdb
     output_feature_file: !ii output_features.csv
   out:
   - output_feature_file: !& output_features.csv
 
 - id: onionnet_score
+  scatter: [input_feature_file]
   in:
     input_feature_file: !* output_features.csv
     output_score_file: !ii predicted_pKa.csv
@@ -127,7 +135,7 @@ steps:
 
 - id: load_onionnet_score
   in:
-    input_score_file: !* predicted_pKa.csv
+    input_score_files: !* predicted_pKa.csv
   out:
   - dG_values: !& onionnet_score
 
@@ -147,14 +155,14 @@ steps:
   out:
   - output_txt_path: !& results.txt
 
-- id: visualize_protein_ligands
-  scatter: [sdf_file_paths]
-  in:
-    pdb_file_path: !* protein_fix_amides.pdb
-    sdf_file_paths: !* filtered_poses_2D
-    output_html_path: !ii vis_poses.html
-  out:
-  - output_html_path: !& vis_poses.html
+# - id: visualize_protein_ligands
+#   scatter: [sdf_file_paths]
+#   in:
+#     pdb_file_path: !* protein_fix_amides.pdb
+#     sdf_file_paths: !* filtered_poses_2D
+#     output_html_path: !ii vis_poses.html
+#   out:
+#   - output_html_path: !& vis_poses.html
 
 wic:
   graphviz:
@@ -233,8 +241,8 @@ wic:
       wic:
         graphviz:
           label: Inspect Docking Results
-    (19, visualize_protein_ligands):
-      wic:
-        graphviz:
-          label: Visualize Protein-Ligand Complexes
+    # (19, visualize_protein_ligands):
+    #   wic:
+    #     graphviz:
+    #       label: Visualize Protein-Ligand Complexes
 
