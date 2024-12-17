@@ -2,7 +2,7 @@ steps:
 - id: pdb
   in:
     config: !ii
-      pdb_code: 6AGT
+      pdb_code: 3CQP
     output_pdb_path: !ii protein.pdb
   out:
   - output_pdb_path: !& protein.pdb
@@ -10,7 +10,7 @@ steps:
 - id: generate_conformers_obabel
   scatter: [smiles]
   in:
-    smiles: !ii ['C1=CC2=CC=C3C=CC=NC3=C2N=C1'] #,'CC(=O)NCCC1=C[NH]C2=C1C=C(O)C=C2,NCCCCNC(N)=N','NC(=O)C1=CC=CC=C1,OC(=O)CC1=CC(=C(O)C=C1)O']
+    smiles: !ii ['COc(cc1)ccc1C#N'] #'C1=CC2=CC=C3C=CC=NC3=C2N=C1'#,'CC(=O)NCCC1=C[NH]C2=C1C=C(O)C=C2,NCCCCNC(N)=N','NC(=O)C1=CC=CC=C1,OC(=O)CC1=CC(=C(O)C=C1)O']
     output_sdf_path: !ii mol.sdf
     num_conformers: !ii 5 # generates 5 conformers for each smiles and selects the best one
     num_steps : !ii 100
@@ -51,3 +51,21 @@ steps:
     predicted_poses: !* output_poses
     centroid_cutoff: !ii 5 # if centroid of all poses are within cutoff then only keep most confident pose, requires visual inspection
 
+# wic:
+#   graphviz:
+#     label: DiffDock
+
+#   steps:
+#     (4, diffdock):
+#       wic:
+#         namespace: gpu
+#         graphviz:
+#           label: Executing DiffDock
+#     (5, rank_diffdock_poses):
+#       wic:
+#         graphviz:
+#           label: Rank all poses
+#     (6, pose_cluster_filter):
+#       wic:
+#         graphviz:
+#           label: Cluster poses

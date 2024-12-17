@@ -12,7 +12,7 @@ baseCommand: ["python", "/sanitize_ligand.py"]
 
 hints:
   DockerRequirement:
-    dockerPull:  mrbrandonwalker/sanitize_ligand
+    dockerPull:  mrbrandonwalker/sanitize_ligand:latest
 
 requirements:
   InlineJavascriptRequirement: {}

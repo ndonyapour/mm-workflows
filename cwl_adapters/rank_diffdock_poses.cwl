@@ -12,7 +12,9 @@ baseCommand: ["python", "/rank_diffdock_poses.py"]
 
 hints:
   DockerRequirement:
-    dockerPull: mrbrandonwalker/rank_diffdock_poses
+    dockerPull: mrbrandonwalker/rank_diffdock_poses:latest
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
 
 requirements:
   InlineJavascriptRequirement: {}

@@ -1,0 +1,15 @@
+steps:
+  - id: config_tag_pdb
+    scatter: [pdb_id]
+    in:
+      pdb_id: !ii ['6AGT','7WWT']
+      filter: !ii False
+    out:
+    - output_config_string: !& pdb_id_str
+  - id: pdb
+    scatter: [config]
+    in:
+      config: !* pdb_id_str
+      output_pdb_path: !ii protein.pdb
+    out:
+    - output_pdb_path: !& protein.pdb

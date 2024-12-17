@@ -18,6 +18,8 @@ hints:
     cudaDeviceCountMax: 1
   DockerRequirement:
     dockerPull: mrbrandonwalker/diffdock_gpu
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
 
 requirements:
   InlineJavascriptRequirement: {}

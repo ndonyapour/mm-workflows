@@ -12,7 +12,9 @@ baseCommand: ["bash", "/DiffDock/diffdock_cmds.sh"]
 
 hints:
   DockerRequirement:
-    dockerPull: mrbrandonwalker/diffdock_cpu
+    dockerPull: mrbrandonwalker/diffdock_cpu:latest
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
 
 requirements:
   InlineJavascriptRequirement: {}

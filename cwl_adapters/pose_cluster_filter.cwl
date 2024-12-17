@@ -12,7 +12,7 @@ baseCommand: ["python", "/pose_cluster_filter.py"]
 
 hints:
   DockerRequirement:
-    dockerPull: mrbrandonwalker/pose_cluster_filter
+    dockerPull: mrbrandonwalker/pose_cluster_filter:latest
 
 requirements:
   InlineJavascriptRequirement: {}
