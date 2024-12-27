@@ -1,8 +1,8 @@
 steps:
 - id: extract_data_csv
   in:
-    input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned_chunk1.csv
-    max_row: !ii 102 # Use 1 for CI
+    input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned_chunk3.csv
+    max_row: !ii 1000 # Use 1 for CI
     column_name: !ii "smilesIso"
     output_txt_path: !ii smiles.txt
   out:
@@ -111,7 +111,7 @@ steps:
 - id: divide_chunks
   in:
     input_pdb_paths: !* complex_pdb.pdb
-    chunk_size: !ii 100
+    chunk_size: !ii 50
   out:
   - output_pdb_paths: !& complex_structure.pdb
 

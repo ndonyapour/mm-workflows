@@ -11,7 +11,8 @@ arguments: ["-inp", "input.dat"]
 hints:
   DockerRequirement:
     dockerPull: ndonyapour/onionnet
-
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
 requirements:
   - class: InlineJavascriptRequirement
   # This enables staging input files and dynamically generating a file

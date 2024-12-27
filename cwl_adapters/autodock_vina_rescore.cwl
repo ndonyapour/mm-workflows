@@ -147,6 +147,9 @@ outputs:
       loadContents: true
       outputEval: |
         ${
+          if (!self[0]) {
+            return None;
+          }
           var lines = self[0].contents.split("\n");
           // The correct line should be of the form
           // Estimated Free Energy of Binding   : -6.053 (kcal/mol) [=(1)+(2)+(3)+(4)]
