@@ -211,6 +211,9 @@ outputs:
       # (An external script can write a cwl.output.json file, which will alternatively determine the outputs.)
       outputEval: |
         ${
+          if (!self[0]) {
+            return null;
+          }
           var lines = self[0].contents.split("\n");
           var files = []; // In this case, flatten the 2D nested array into a 1D array
           for (var i = 0; i < lines.length; i++) {
@@ -235,6 +238,9 @@ outputs:
       loadContents: true # If true, this additionally binds self[0].contents
       outputEval: |
         ${
+          if (!self[0]) {
+            return null;
+          }
           var lines = self[0].contents.split("\n");
           var files = []; // In this case, flatten the 2D nested array into a 1D array
           for (var i = 0; i < lines.length; i++) {
@@ -261,6 +267,9 @@ outputs:
       loadContents: true
       outputEval: |
         ${
+          if (!self[0]) {
+            return null;
+          }
           var lines = self[0].contents.split("\n");
           var docking_scores = [];
           for (var i = 0; i < lines.length; i++) {
@@ -281,6 +290,9 @@ outputs:
       loadContents: true
       outputEval: |
         ${
+          if (!self[0]) {
+            return null;
+          }
           var lines = self[0].contents.split("\n");
           var data = [];
           for (var i = 0; i < lines.length; i++) {
@@ -307,6 +319,9 @@ outputs:
       loadContents: true
       outputEval: |
         ${
+          if (!self[0]) {
+            return null;
+          }
           var lines = self[0].contents.split("\n");
           var dGs = [];
           for (var i = 0; i < lines.length; i++) {
@@ -333,6 +348,9 @@ outputs:
       loadContents: true
       outputEval: |
         ${
+          if (!self[0]) {
+            return null;
+          }
           var lines = self[0].contents.split("\n");
           var pdbids = [];
           for (var i = 0; i < lines.length; i++) {

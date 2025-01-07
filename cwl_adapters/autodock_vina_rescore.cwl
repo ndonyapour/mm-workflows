@@ -29,6 +29,8 @@ requirements:
 # InitialWorkDirRequirement is needed for --local_only, because vina writes out
 # the optimized geometry in the same directory as input_ligand_pdbqt_path,
 # which needs to be writeable.
+  ResourceRequirement:
+    ramMin: 10240 # 10240 Mi
   InitialWorkDirRequirement:
     listing:
     - $(inputs.input_ligand_pdbqt_path)
@@ -148,15 +150,18 @@ outputs:
       outputEval: |
         ${
           if (!self[0]) {
-            return None;
+            return null;
           }
           var lines = self[0].contents.split("\n");
           // The correct line should be of the form
           // Estimated Free Energy of Binding   : -6.053 (kcal/mol) [=(1)+(2)+(3)+(4)]
           var bfe_line = lines.filter(function(s) {return s.split(" ")[0] == "Estimated"})[0];
+          if (!bfe_line) { // if error happens 
+            return null;
+          }
           var docking_score_string = bfe_line.split(" ").filter(function(s) {return !isNaN(parseFloat(s))})[0];
           var docking_score = parseFloat(docking_score_string);
-          return docking_score
+          return docking_score;
         }
 
 stdout: $(inputs.output_log_path)
