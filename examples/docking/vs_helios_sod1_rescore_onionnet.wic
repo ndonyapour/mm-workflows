@@ -1,8 +1,8 @@
 steps:
 - id: extract_data_csv
   in:
-    input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned_chunk3.csv
-    max_row: !ii 1000 # Use 1 for CI
+    input_csv_path: !ii /home/donyapourn2/projects/wic/HeliosAPI/sod1_plates/sod1_platemap_cleaned_chunk1.csv
+    max_row: !ii 20 # Use 1 for CI
     column_name: !ii "smilesIso"
     output_txt_path: !ii smiles.txt
   out:
@@ -155,14 +155,14 @@ steps:
   out:
   - output_txt_path: !& results.txt
 
-# - id: visualize_protein_ligands
-#   scatter: [sdf_file_paths]
-#   in:
-#     pdb_file_path: !* protein_fix_amides.pdb
-#     sdf_file_paths: !* filtered_poses_2D
-#     output_html_path: !ii vis_poses.html
-#   out:
-#   - output_html_path: !& vis_poses.html
+- id: visualize_protein_ligands
+  scatter: [sdf_file_paths]
+  in:
+    pdb_file_path: !* protein_fix_amides.pdb
+    sdf_file_paths: !* filtered_poses_2D
+    output_html_path: !ii vis_poses.html
+  out:
+  - output_html_path: !& vis_poses.html
 
 wic:
   graphviz:
